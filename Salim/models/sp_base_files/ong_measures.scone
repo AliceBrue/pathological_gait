@@ -1,0 +1,114 @@
+Measure {
+	type = CompositeMeasure
+	Measures {
+		Measure {
+			type = GaitMeasure
+			name = Gait
+			weight = 100
+			threshold = 0
+			termination_height = 0.8
+			min_velocity = 1.20
+			max_velocity = 1.30
+		}
+		Measure {
+			type = EffortMeasure
+			name = Effort
+			weight = 1
+			measure_type = Uchida2016
+			use_cost_of_transport = 1
+			specific_tension = 0.60e6
+			MuscleProperties {
+				MuscleProperties { muscle = hamstrings* slow_twitch_ratio = 0.499 }
+				MuscleProperties { muscle = bifemsh* slow_twitch_ratio = 0.529 }
+				MuscleProperties { muscle = glut_max* slow_twitch_ratio = 0.55 }
+				MuscleProperties { muscle = iliopsoas* slow_twitch_ratio = 0.5 }
+				MuscleProperties { muscle = rect_fem* slow_twitch_ratio = 0.387 }
+				MuscleProperties { muscle = vasti* slow_twitch_ratio = 0.484 }
+				MuscleProperties { muscle = gastroc* slow_twitch_ratio = 0.546 }
+				MuscleProperties { muscle = soleus* slow_twitch_ratio = 0.759 }
+				MuscleProperties { muscle = tib_ant* slow_twitch_ratio = 0.721 }
+				MuscleProperties { muscle = ercspn* slow_twitch_ratio = 0.6 }
+				MuscleProperties { muscle = intobl* slow_twitch_ratio = 0.56 }
+				MuscleProperties { muscle = extobl* slow_twitch_ratio = 0.58 }
+			}
+		}
+		Measure {
+			type = CompositeMeasure
+			name = AnkleLimits
+			weight = 0.1
+			threshold = 0
+			Measures {
+				Measure {
+					type = DofLimitMeasure
+					name = AnkleL
+					dof = ankle_angle_l
+					squared_force_penalty = 1 
+				}
+				Measure {
+					type = DofLimitMeasure
+					name = AnkleR
+					dof = ankle_angle_r
+					squared_force_penalty = 1
+				}
+			}
+		}
+		Measure {
+			type = CompositeMeasure
+			name = KneeLimits
+			weight = 0.1
+			threshold = 0
+			Measures {
+				Measure {
+					type = DofLimitMeasure
+					name = KneeL
+					dof = knee_angle_l
+					squared_force_penalty = 1
+				}
+				Measure {
+					type = DofLimitMeasure
+					name = KneeR
+					dof = knee_angle_r
+					squared_force_penalty = 1
+				}
+			}
+		}
+		Measure {
+			type = CompositeMeasure
+			name = HipLimits
+			weight = 0.1
+			threshold = 0
+			Measures {
+				Measure {
+					type = DofLimitMeasure
+					name = HipL
+					dof = hip_flexion_l
+					squared_force_penalty = 1
+				}
+				Measure {
+					type = DofLimitMeasure
+					name = HipR
+					dof = hip_flexion_r
+					squared_force_penalty = 1
+				}
+			}
+		}
+		Measure {
+			type = BodyMeasure
+			name = HeadStabilityY
+			weight = 0.25
+			body = head
+			acceleration { min = -4.903325 max = 4.903325 squared_penalty = 1}
+			axes_weights = [0 1 0]
+			offset = [0 0 0]
+		}
+		Measure {
+			type = BodyMeasure
+			name = HeadStabilityX
+			weight = 0.25
+			body = head
+			acceleration { min = -2.4516625 max = 2.4516625 squared_penalty = 1}
+			axes_weights = [1 0 0]
+			offset = [0 0 0]
+		}
+	}
+}

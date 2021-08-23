@@ -1,0 +1,3 @@
+# This script can be used to secure copy via ssh an experiment folder from personal computer to a linux folder.
+
+scp -r '/Users/Selim/Documents/Etudes/Automne 2020 Master Robotique/BioRob Semester Project/switchdrive/Biorob_semester_project/exports/geyer_couplings_multiobjective_soleus-tib_ant_stance/KV/fourth_run' benghorb@biorobpclab3.epfl.ch:~/SCONE/variable_controller_generation/exports/geyer_914_couplings_1percent/geyer_couplings_multiobjective_soleus-tib_ant_stance/KV/

@@ -1,0 +1,8 @@
+subject01_walk1_states																		
+version=1																		
+nRows=1																		
+nColumns=19																		
+inDegrees=no																		
+endheader																		
+time	pelvis_tilt	pelvis_tx	pelvis_ty	hip_flexion_r	knee_angle_r	ankle_angle_r	hip_flexion_l	knee_angle_l	ankle_angle_l	pelvis_tilt_u	pelvis_tx_u	pelvis_ty_u	hip_flexion_r_u	knee_angle_r_u	ankle_angle_r_u	hip_flexion_l_u	knee_angle_l_u	ankle_angle_l_u
+8.982	-0.169058	0	0.894461	0.444137	-0.325476	0.233562	0.374038	-1.26776	-0.0238581	-0.0178688	1.25	0.196707	-1.30624	0.0218232	0.62793	3.54846	-2.31369	0.59137

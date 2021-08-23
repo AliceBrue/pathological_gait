@@ -1,0 +1,314 @@
+Controllers {
+	GaitStateController {
+		landing_threshold = 0~0.5<-0.5,0.5>	
+		stance_load_threshold = 0.1~0.1<0.001,0.5>
+		swing_load_threshold  = 0.1~0.1<0.001,0.5>
+		late_stance_threshold = -0.1~0.05<-0.5,0.5>
+		leg_load_sensor_delay = 0
+		symmetric = 1
+		ConditionalControllers {
+			# Feed forward control to all muscles during stance, liftoff and swing
+			ConditionalController {
+				states = "EarlyStance LateStance, Liftoff, Swing Landing"
+				FeedForwardController {
+					Function {
+						type = Polynomial
+						degree = 0
+						coefficient0 = 0.05~0.01<0.01,1>
+					}
+				}
+			}
+			# TA stretch reflex during stance 
+			ConditionalController {
+				states = "EarlyStance LateStance Liftoff"
+				ReflexController {
+					MuscleReflex {
+						target = tib_ant
+						delay = 0.020
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 0.8~0.2<0.0,10.0> 
+						L0 = 0.8~0.1<0.5,1.0>
+					}
+				}
+			}
+			# TA stretch reflex during swing
+			ConditionalController {
+				states = Swing
+				ReflexController {
+					MuscleReflex {
+						target = tib_ant
+						delay = 0.020
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 2.5~0.2<0.0,10.0> 
+						L0 = 0.8~0.1<0.5,1.0> 
+					}
+				}
+			}
+			# TA stretch reflex during landing
+			ConditionalController {
+				states = Landing
+				ReflexController {
+					MuscleReflex {
+						target = tib_ant
+						delay = 0.020
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 0.4~0.2<0.0,10.0> 
+						L0 = 0.8~0.1<0.5,1.0> 
+					}
+				}
+			}
+			# SOL C0 during swing
+			ConditionalController {
+				states = "Swing, Landing"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						C0 = 0.0
+					}
+				}
+			}
+			# SOL C0 during stance
+			ConditionalController {
+				states = "EarlyStance LateStance Liftoff"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						C0 = 0
+					}
+				}
+			}
+			# SOL stretch reflex during stance
+			ConditionalController {
+				states = "EarlyStance LateStance Liftoff"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						min_control_value = 0.0
+						allow_neg_L = 0
+						allow_neg_V = 0
+						KL = 1.0~0.2<0.0,10.0>
+						L0 = 0.8~0.1<0.5,1.0>
+						KV = 1.0~0.2<0.0,10.0>
+					}
+				}
+			}
+			# SOL stretch reflex during swing
+			ConditionalController {
+				states = "Swing Landing"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						min_control_value = 0.0
+						allow_neg_L = 0
+						allow_neg_V = 0
+						KL = 1.0~0.2<0.0,10.0>
+						L0 = 0.8~0.1<0.5,1.0>
+						KV = 1.0~0.2<0.0,10.0>
+					}
+				}
+			}
+			# SOL to TA negative force feedback during stance
+			ConditionalController {
+				states = "EarlyStance LateStance Liftoff Swing Landing"
+				ReflexController {
+					MuscleReflex {
+						target = tib_ant
+						source = soleus
+						delay = 0.040
+						allow_neg_F = 0
+						KF = -1.0~0.2<-10.0,0.0>
+					}
+				}
+			}
+			# HAMS, GMAX and VAS stretch reflexes during stance
+			ConditionalController {
+				states = "EarlyStance LateStance"
+				ReflexController {
+					MuscleReflex {
+						target = hamstrings
+						delay = 0.005
+						allow_neg_L = 0
+						allow_neg_V = 0
+						KL = 0.4~0.2<0.0,10.0> 
+						L0 = 1.1~0.1<0.5,1.1>
+						KV = 0.2~0.2<0.0,10.0> 
+					}
+					MuscleReflex {
+						target = glut_max
+						delay = 0.005
+						allow_neg_L = 0
+						allow_neg_V = 0
+						KL = 0.5~0.2<0.0,10.0>
+						L0 = 1.2~0.1<0.5,1.1> 
+						KV = 0.2~0.2<0.0,10.0>
+					}
+					MuscleReflex {
+						target = vasti
+						delay = 0.010
+						allow_neg_L = 0
+						allow_neg_V = 0
+						KL = 0.6~0.2<0.0,10.0>
+						L0 = 1.0~0.1<0.5,0.85> 
+						KV = 0.2~0.2<0.0,10.0>
+					}
+				}
+			}
+			# SOL positive force feedback during early stance
+			ConditionalController {
+				states = "EarlyStance"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						allow_neg_F = 0
+						KF = 0.0
+					}
+				}
+			}
+			# SOL positive force feedback during swing
+			ConditionalController {
+				states = "Swing Landing"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						allow_neg_F = 0
+						KF = 0.2~0.2<-10.0,10.0> 
+					}
+				}
+			}
+			# SOL and GAS positive force feedback during late stance and liftoff
+			ConditionalController {
+				states = "LateStance Liftoff"
+				ReflexController {
+					MuscleReflex {
+						target = soleus
+						delay = 0.020
+						allow_neg_F = 0
+						KF = 1.0~0.2<0.0,10.0> 
+					}
+					MuscleReflex {
+						target = gastroc
+						delay = 0.020
+						allow_neg_F = 0
+						KF = 1.0~0.2<0.0,10.0> 
+					}
+				}
+			}
+			# HAMS, GMAX and ILPSO proportional-derivative control from pelvis tilt joint angle and velocity feedbacks
+			ConditionalController {
+				states = "EarlyStance LateStance"
+				ReflexController {
+					DofReflex {
+						target = hamstrings
+						source = pelvis_tilt
+						delay = 0.00
+						P0 = 0~0.1<-0.5,0.5>
+						KP = 0.8~0.1<-10,10> 
+						KV = 0.5~0.1<-10,10> 
+					}
+					DofReflex {
+						target = glut_max
+						source = pelvis_tilt
+						delay = 0.005
+						P0 = 0~0.1<-0.5,0.5>
+						KP = 0.2~0.1<-10,10> 
+						KV = 0.7~0.1<-10,10> 
+					}
+					DofReflex {
+						target = iliopsoas
+						source = pelvis_tilt
+						delay = 0.005
+						P0 = 0~0.1<-0.5,0.5>
+						KP = -1.0~0.1<-10,10> 
+						KV = -1.0~0.1<-10,10> 
+					}
+				}
+			}
+			# ILPSO and RF stretch reflexes during liftoff
+			ConditionalController {
+				states = Liftoff
+				ReflexController {
+					MuscleReflex {
+						target = iliopsoas
+						delay = 0.005
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 1.0~0.2<0.0,10.0>
+						L0 = 0.8~0.1<0.5,1.1>						
+					}
+					MuscleReflex {
+						target = rect_fem
+						delay = 0.005
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 1.2~0.2<0.0,10.0> 
+						L0 = 0.9~0.1<0.5,1.1> 
+					}
+				}
+			}
+			# BFSH stretch reflex during swing
+			ConditionalController {
+				states = Swing
+				ReflexController {
+					MuscleReflex {
+						target = bifemsh
+						delay = 0.010
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 1.5~0.2<0.0,10.0> 
+						L0 = 1.0~0.1<0.5,1.1> 
+					}
+				}
+			}
+			# ILPSO stretch reflex during swing and liftoff
+			ConditionalController {
+				states = "Swing, Landing"
+				ReflexController {
+					MuscleReflex {
+						target = iliopsoas
+						delay = 0.005
+						min_control_value = 0.0
+						allow_neg_L = 0
+						KL = 1.5~0.2<0.0,10.0> 
+						L0 = 0.8~0.1<0.5,1.1> 
+					}
+				}
+			}
+			# HAMS, GMAX and VAS stretch reflexes during landing
+			ConditionalController {
+				states = Landing
+				ReflexController {
+					MuscleReflex {
+						target = hamstrings
+						delay = 0.005
+						allow_neg_L = 0
+						KL = 0.4~0.2<0.0,10.0> 
+						L0 = 1.1~0.1<0.5,1.1>
+					}
+					MuscleReflex {
+						target = glut_max
+						delay = 0.005
+						allow_neg_L = 0
+						KL = 0.5~0.2<0.0,10.0>
+						L0 = 1.2~0.1<0.5,1.1> 
+					}
+					MuscleReflex {
+						target = vasti
+						delay = 0.010
+						allow_neg_L = 0
+						KL = 0.6~0.2<0.0,10.0> 
+						L0 = 1.0~0.1<0.5,0.85> 
+					}
+				}
+			}
+		}	
+	}
+}

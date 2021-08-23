@@ -1,0 +1,47 @@
+PagmoOptimizer {
+	
+signature_prefix = "geyer_simple_multiobjective_soleus_force_length_curve"	
+	# initial parameeters
+	init_file = init_geyer_good_signs.par
+	use_init_file = true
+	use_init_file_std = true
+	
+	max_generations = 50
+	population_size = 16
+	optimization_method = NSGAII
+	max_evolutions = 10
+	initialize_population = true
+	# use_archipelago = false
+	# max_threads = 4
+	
+	PagmoObjective {
+		max_duration = 10
+		# use_single_objective = true
+		
+		# Model used in simulation
+		ModelOpenSim3 {
+			model_file = Human0914.osim
+
+			# Override model propertiess
+			Properties {
+				soleus_l { max_isometric_force.factor = 1 }
+				soleus_r { max_isometric_force.factor = 1 }
+				soleus_l { optimal_fiber_length.factor = 1 } 
+				soleus_r { optimal_fiber_length.factor = 1 } 
+				soleus_l { tendon_slack_length.factor = 1 }
+				soleus_r { tendon_slack_length.factor = 1 }
+			}
+			
+			# Optimize initial state parameters
+			state_init_file = Human0914_init.sto
+			initial_state_offset =	0~0.01<-0.5,0.5>
+			initial_state_offset_exclude = "*_tx;*_ty;*_u"
+		}
+		
+		# Controller for gait
+		<< ../gait_controller.scone >>
+		
+		# Measure for gait
+		<< gait_measure.scone >>
+	}
+}
