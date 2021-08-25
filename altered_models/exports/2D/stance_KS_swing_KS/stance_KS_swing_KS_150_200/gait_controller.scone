@@ -1,0 +1,283 @@
+# Gait controller adapted from [Geyer & Herr 2010] by Thomas Geijtenbeek
+# Version history
+# 13: Added SOL and GAS to TA S- refelx during stance and swing
+# 12: Added TA to GAS S- reflex during stance and swing
+# 11: Added TA S+ and GAS L+, S+ and F reflexes during stance and swing
+# 10: Added SOL L+, S+ and F reflexes, and TA to SOL S- reflexes during stance and swing
+# 9: Imposed gain signs and positive L reflexes
+# 8: Moved 'symmetric' property to GaitStateController
+# 7: Changed C0 ranges to <-10,10>; fixes issue for negative C0 on glut_max during Liftoff
+# 6: Fixed sign on glut_max during LiftOff
+GaitStateController {
+	signature_postfix = "GH2010v8"
+	stance_load_threshold = 0.15226376~0.00002369<0.14465057,0.15987695>
+	leg_load_sensor_delay = 0
+	symmetric = 1
+	ConditionalControllers {
+		# TA stretch reflexes [Geyer & Herr 2010]; during stance
+		ConditionalController {
+			states = "EarlyStance LateStance Liftoff"
+			ReflexController {
+				MuscleReflex {
+					target = tib_ant
+					delay = 0.020
+					allow_neg_L = 0
+					KL = 1.24947670~0.00039346<1.18700286,1.31195054>
+					L0 = 0.76402355~0.00004220<0.72582237,0.80222473>
+					KS = 0.00016476~0.00001714<0.00015652,0.00017300>
+				}
+			}
+		}
+		# TA stretch reflexes [Geyer & Herr 2010]; during swing
+		ConditionalController {
+			states = "Swing Landing"
+			ReflexController {
+				MuscleReflex {
+					target = tib_ant
+					delay = 0.020
+					allow_neg_L = 0
+					KL = 1.19836490~0.00022367<1.13844666,1.25828315>
+					L0 = 0.73850055~0.00003260<0.70157552,0.77542558>
+					KS = 0.03548892~0.00002091<0.03371447,0.03726336>
+				}
+			}
+		}
+		# SOL to TA F- reflex during all gait cycle [Geyer & Herr 2010]
+		ConditionalController {
+			states = "EarlyStance LateStance Liftoff Swing Landing"
+			ReflexController {
+				MuscleReflex {
+					target = tib_ant
+					source = soleus
+					delay = 0.020
+					KF = -0.11087729~0.00003551<-0.11642115,-0.10533343>
+				}
+			}
+		}
+		# TA to SOL and TA to GAS S- reflexes during stance
+		ConditionalController {
+			states = "EarlyStance LateStance Liftoff"
+			ReflexController {
+				MuscleReflex {
+					target = soleus
+					source = tib_ant
+					delay = 0.040
+					KS = -0.85145620~0.00045379<-0.89402901,-0.80888339>
+				}
+				MuscleReflex {
+					target = gastroc
+					source = tib_ant
+					delay = 0.040
+					KS = -0.33864730~0.00039622<-0.35557966,-0.32171493>
+				}
+			}
+		}
+		# TA to SOL and TA to GAS S- reflexes during swing
+		ConditionalController {
+			states = "Swing Landing"
+			ReflexController {
+				MuscleReflex {
+					target = soleus
+					source = tib_ant
+					delay = 0.040
+					KS = -3.27343660~0.00052100<-3.43710843,-3.10976477>
+				}
+				MuscleReflex {
+					target = gastroc
+					source = tib_ant
+					delay = 0.040
+					KS = -1.68481880~0.00043554<-1.76905974,-1.60057786>
+				}
+			}
+		}
+		# SOL to TA and GAS to TA S- reflexes during stance
+		ConditionalController {
+			states = "EarlyStance LateStance Liftoff"
+			ReflexController {
+				MuscleReflex {
+					target = tib_ant
+					source = soleus
+					delay = 0.040
+					KS = -0.00330016~0.00348198<-0.00346517,-0.00313515>
+				}
+				MuscleReflex {
+					target = tib_ant
+					source = gastroc
+					delay = 0.040
+					KS = -0.00376352~0.00339192<-0.00395169,-0.00357534>
+				}
+			}
+		}
+		# SOL to TA and GAS to TA S- reflexes during swing
+		ConditionalController {
+			states = "Swing Landing"
+			ReflexController {
+				MuscleReflex {
+					target = tib_ant
+					source = soleus
+					delay = 0.040
+					KS = -0.00330152~0.00333406<-0.00346660,-0.00313645>
+				}
+				MuscleReflex {
+					target = tib_ant
+					source = gastroc
+					delay = 0.040
+					KS = -0.00349001~0.00331527<-0.00366451,-0.00331551>
+				}
+			}
+		}
+		# GAS and SOL F+ reflexes [Geyer & Herr 2010]
+		# GAS and SOL L+ and S+ reflexes during stance
+		ConditionalController {
+			states = "EarlyStance LateStance Liftoff"
+			ReflexController {
+				MuscleReflex {
+					target = soleus
+					delay = 0.020
+					allow_neg_L = 0
+					KF = 0.22835326~0.00003187<0.21693560,0.23977092>
+					KL = 4.03431680~0.00038494<3.83260096,4.23603264>
+					L0 = 0.96778415~0.00009900<0.91939494,1.01617336>
+					KS = 0.23600097000000003
+				}
+				MuscleReflex {
+					target = gastroc
+					delay = 0.020
+					allow_neg_L = 0
+					KF = 1.41090210~0.00002198<1.34035700,1.48144720>
+					KL = 0.07919745~0.00042393<0.07523758,0.08315732>
+					L0 = 0.83881242~0.00017260<0.79687180,0.88075304>
+					KS = 0.2534184
+				}
+			}
+		}
+		# GAS and SOL L+, S+ and F- reflexes during swing
+		ConditionalController {
+			states = "Swing Landing"
+			ReflexController {
+				MuscleReflex {
+					target = soleus
+					delay = 0.020
+					allow_neg_L = 0
+					KL = 0.80247844~0.00076727<0.76235452,0.84260236>
+					L0 = 0.89856048~0.00016713<0.85363246,0.94348850>
+					KS = 0.21528694
+					KF = -0.91319461~0.00071251<-0.95885434,-0.86753488>
+				}
+				MuscleReflex {
+					target = gastroc
+					delay = 0.020
+					allow_neg_L = 0
+					KL = 0.00881098~0.00033831<0.00837043,0.00925153>
+					L0 = 0.52370651~0.00018201<0.49752118,0.54989184>
+					KS = 0.5311976
+					KF = -1.81632020~0.00042790<-1.90713621,-1.72550419>
+				}
+			}
+		}
+		# Stance reflexes
+		ConditionalController {
+			states = "EarlyStance LateStance"
+			ReflexController {
+				Reflexes {
+					# F+ VAS
+					ConditionalMuscleReflex {
+						target = vasti
+						delay = 0.010
+						KF = 0.81997730~0.00009347<0.77897843,0.86097617>
+						C0 = 0.08412978~0.00002117<0.07992329,0.08833627>
+						dof = knee_angle
+						pos_max = -0.30540968~0.00003230<-0.32068016,-0.29013920>
+					}
+					# Root stability
+					DofReflex {
+						target = hamstrings
+						source = pelvis_tilt
+						delay = 0.005
+						KP = 0.70631301~0.00037340<0.67099736,0.74162866>
+						KV = 0.56676980~0.00001883<0.53843131,0.59510829>
+						P0 = -0.105 # theta_ref, not optimized because of C0
+						C0 = 0.02646483~0.00004157<0.02514159,0.02778807>
+					}
+					DofReflex {
+						target = glut_max
+						source = pelvis_tilt
+						delay = 0.005
+						KP = 1.49405130~0.00030550<1.41934874,1.56875386>
+						KV = 0.31400002~0.00001910<0.29830002,0.32970002>
+						P0 = -0.105 # theta_ref, not optimized because of C0
+						C0 = 0.15962183~0.00003218<0.15164074,0.16760292>
+					}
+					DofReflex {
+						target = iliopsoas
+						source = pelvis_tilt
+						delay = 0.005
+						KP = -3.49303230~0.00051472<-3.66768392,-3.31838068>
+						KV = -0.54350240~0.00002346<-0.57067752,-0.51632728>
+						P0 = -0.105 # theta_ref, not optimized because of C0
+						C0 = 0.33180903~0.00005055<0.31521858,0.34839948>
+					}
+				}
+			}
+		}
+		# Double support reflexes
+		ConditionalController {
+			states = "Liftoff"
+			ReflexController {
+				MuscleReflex {
+					target = iliopsoas
+					delay = 0.005
+					C0 = 0.33785909~0.00002772<0.32096614,0.35475204>
+				}
+				MuscleReflex {
+					target = glut_max
+					delay = 0.005
+					C0 = -0.02465332~0.00002152<-0.02588599,-0.02342065>
+				}
+			}
+		}
+		# Swing reflexes
+		ConditionalController {
+			states = "Swing Landing"
+			ReflexController {
+				# HFL excitation [Geyer & Herr 2010]
+				MuscleReflex {
+					target = iliopsoas
+					delay = 0.005
+					allow_neg_L = 0
+					KL = 0.56097945~0.00002370<0.53293048,0.58902842>
+					L0 = 0.39090290~0.00002635<0.37135776,0.41044804>
+				}
+				DofReflex {
+					target = iliopsoas
+					source = pelvis_tilt
+					delay = 0.005
+					KP = 0.01139550~0.00013618<0.01082572,0.01196527>
+					KV = 0.14503447~0.00002441<0.13778275,0.15228619>
+					P0 = -0.04420791~0.00002128<-0.04641831,-0.04199752>
+				}
+				# late-swing HFL inhibition [Geyer & Herr 2010]
+				MuscleReflex {
+					target = iliopsoas
+					source = hamstrings
+					delay = 0.005
+					allow_neg_L = 0
+					KL = -8.25492520~0.00086381<-8.66767146,-7.84217894>
+					L0 = 1.16590510~0.00001975<1.10760985,1.22420036>
+				}
+				# late-swing HAM and GLU reflexes [Geyer & Herr 2010]
+				MuscleReflex {
+					target = hamstrings
+					delay = 0.005
+					KF = 0.57509984~0.00001896<0.54634485,0.60385483>
+				}
+				MuscleReflex {
+					target = glut_max
+					delay = 0.005
+					KF = 0.62126484~0.00002154<0.59020160,0.65232808>
+				}
+			}
+		}
+	}
+}
+

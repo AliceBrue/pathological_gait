@@ -149,9 +149,8 @@ def plot_column(column_values, parameter_values, column_name, x_label, export_pa
         ax.invert_xaxis()
 
     y_label = ""
-    for s in range(len(column_name.split('_')) - 1):
+    for s in range(len(column_name.split('_'))):
         y_label = y_label + " " + column_name.split('_')[s]
-    y_label = y_label + " (" + column_name.split('_')[-1] + ")"
     ax.set_ylabel(y_label)
     if inv:
         ax.set_title(y_label + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
@@ -213,14 +212,14 @@ def plot_column_std_phases(column_values, std_values, st_column_values, st_std_v
         ax.errorbar(np.array(parameter_values_extended) + delta / 10, column_values_extended, column_std_extended,
                     color="k", marker='D', linestyle="None", label="gait cycle")
         ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="b", marker='D', linestyle="None", label="stance")
+                    color="dimgrey", marker='D', linestyle="None", label="stance")
         ax.errorbar(np.array(parameter_values_extended) - delta / 10, sw_column_values_extended, sw_column_std_extended,
                     color="tab:orange", marker='D', linestyle="None", label="swing")
     else:
         ax.errorbar(np.array(parameter_values_extended) - delta / 10, column_values_extended, column_std_extended,
                     color="k", marker='D', linestyle="None", label="gait cycle")
         ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="b", marker='D', linestyle="None", label="stance")
+                    color="dimgrey", marker='D', linestyle="None", label="stance")
         ax.errorbar(np.array(parameter_values_extended) + delta / 10, sw_column_values_extended, sw_column_std_extended,
                     color="tab:orange", marker='D', linestyle="None", label="swing")
 
@@ -295,7 +294,7 @@ def plot_column_std_two_muscles(column_values_1, std_values_1, column_values_2, 
     delta = parameter_values_extended[1] - parameter_values_extended[0]
 
     ax.errorbar(np.array(parameter_values_extended) - delta / 12, st_column_values_extended, st_column_std_extended,
-                color="dimgrey", marker='D', linestyle="None", label="SOL")
+                color="k", marker='D', linestyle="None", label="SOL")
     ax2 = ax.twinx()
     ax2.errorbar(np.array(parameter_values_extended) + delta / 12, sw_column_values_extended, sw_column_std_extended,
                  color="darkred", marker='D', linestyle="None", label="GAS")
@@ -306,7 +305,7 @@ def plot_column_std_two_muscles(column_values_1, std_values_1, column_values_2, 
         ax.invert_xaxis()
 
     y_label = "spasticity index (" + side + ")"
-    ax.set_ylabel("SOL " + y_label, color="dimgrey")
+    ax.set_ylabel("SOL " + y_label, color="k")
     ax2.set_ylabel("GAS " + y_label, color="darkred")
     if inv:
         ax.set_title(y_label + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))

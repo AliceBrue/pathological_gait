@@ -214,7 +214,7 @@ def assess_parameter_folder_1d(parameter_folder, side):
     ylabel = ylabel + " (" + var_name.split('_')[-1] + ")"
     title = ""
     inv = False
-    if experiment_title.split(" ")[0] == "physiological":
+    if experiment_title.split(" ")[0] == "biomechanical":
         inv = True
         for n in range(len(experiment_title.split(" ")[2:])):
             title = title + " " + experiment_title.split(" ")[2+n]
@@ -222,11 +222,11 @@ def assess_parameter_folder_1d(parameter_folder, side):
         s = 1
         if "weak" in experiment_title.split(" "):
             inv = True
-            for n in range(int((len(experiment_title.split(" "))-1)/2)+1):
+            for n in range(len(experiment_title.split(" "))-1):
                 if experiment_title.split(" ")[s+n] != "weak":
                     title = title + " " + experiment_title.split(" ")[s+n]
         else:
-            for n in range(int((len(experiment_title.split(" "))-1)/2)):
+            for n in range(len(experiment_title.split(" "))-1):
                 title = title + " " + experiment_title.split(" ")[s+n]
 
     psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, ylabel, title,
@@ -234,10 +234,30 @@ def assess_parameter_folder_1d(parameter_folder, side):
 
     # export metrics plots
     for metric in experiments_dict:
-        if metric.split("_")[0] in ['score', 'total', "spasticity"]:
+        if metric.split("_")[0] in ['score', 'total']:
             title = ""
             inv = False
-            if experiment_title.split(" ")[0] == "physiological":
+            if experiment_title.split(" ")[0] == "biomechanical":
+                inv = True
+                for n in range(len(experiment_title.split(" ")[2:])):
+                    title = title + " " + experiment_title.split(" ")[2 + n]
+            else:
+                s = 1
+                if "weak" in experiment_title.split(" "):
+                    inv = True
+                    for n in range(len(experiment_title.split(" ")) - 1):
+                        if experiment_title.split(" ")[s + n] != "weak":
+                            title = title + " " + experiment_title.split(" ")[s + n]
+                else:
+                    for n in range(len(experiment_title.split(" ")) - 1):
+                        title = title + " " + experiment_title.split(" ")[s + n]
+            psm.plot_column(experiments_dict[metric], experiment_values_float_success, metric, title,
+                                report_folder, healthy_value, experiments_dict_healthy[metric], inv=inv)
+
+        elif metric.split("_")[0] == "spasticity" and metric.split("_")[-1] == 'sol':
+            title = ""
+            inv = False
+            if experiment_title.split(" ")[0] == "biomechanical":
                 inv = True
                 for n in range(len(experiment_title.split(" ")[2:])):
                     title = title + " " + experiment_title.split(" ")[2+n]
@@ -245,26 +265,22 @@ def assess_parameter_folder_1d(parameter_folder, side):
                 s = 1
                 if "weak" in experiment_title.split(" "):
                     inv = True
-                    for n in range(int((len(experiment_title.split(" "))-1)/2)+1):
+                    for n in range(len(experiment_title.split(" "))-1):
                         if experiment_title.split(" ")[s+n] != "weak":
                             title = title + " " + experiment_title.split(" ")[s+n]
                 else:
-                    for n in range(int((len(experiment_title.split(" "))-1)/2)):
+                    for n in range(len(experiment_title.split(" "))-1):
                         title = title + " " + experiment_title.split(" ")[s+n]
-            if metric.split("_")[0] in ['score', 'total']:
-                psm.plot_column(experiments_dict[metric], experiment_values_float_success, metric, title,
-                                report_folder, healthy_value, experiments_dict_healthy[metric], inv=inv)
-            elif metric.split("_")[0] == 'spasticity' and metric.split("_")[-1] == 'sol':
-                metric_1 = 'spasticity_index_sol'
-                std_1 = "spasticity_std_sol"
-                metric_2 = 'spasticity_index_gas'
-                std_2 = "spasticity_std_gas"
-                psm.plot_column_std_two_muscles(experiments_dict[metric_1], experiments_dict[std_1],
-                                                experiments_dict[metric_2], experiments_dict[std_2],
-                                                experiment_values_float_success, 'spasticitity_indexes', title,
-                                                report_folder, healthy_value, experiments_dict_healthy[metric_1],
-                                                experiments_dict_healthy[metric_2], experiments_dict_healthy[std_1],
-                                                experiments_dict_healthy[std_2], side, inv=inv)
+            metric_1 = 'spasticity_index_sol'
+            std_1 = "spasticity_std_sol"
+            metric_2 = 'spasticity_index_gas'
+            std_2 = "spasticity_std_gas"
+            psm.plot_column_std_two_muscles(experiments_dict[metric_1], experiments_dict[std_1],
+                                            experiments_dict[metric_2], experiments_dict[std_2],
+                                            experiment_values_float_success, 'spasticity_indexes', title,
+                                            report_folder, healthy_value, experiments_dict_healthy[metric_1],
+                                            experiments_dict_healthy[metric_2], experiments_dict_healthy[std_1],
+                                            experiments_dict_healthy[std_2], side, inv=inv)
 
 
 def assess_parameter_folder_2d(parameter_folder, side):
@@ -282,10 +298,17 @@ def assess_parameter_folder_2d(parameter_folder, side):
     None.
     '''
     parameter_folder_str = str(parameter_folder)
-    experiment_values = [parameter_value for parameter_value in os.listdir(parameter_folder_str) if os.path.isdir(os.path.join(parameter_folder_str, parameter_value)) and parameter_value != 'report' ]
-    experiment_values.sort()
-    
-    experiment_folders = [os.path.join(parameter_folder_str, str(experiment_value)) for experiment_value in experiment_values]
+    param = parameter_folder_str.split("\\")[-1]
+
+    experiment_values = [parameter_value.split('_')[-2] + '_' + parameter_value.split('_')[-1] for parameter_value in
+                         os.listdir(parameter_folder_str) if
+                         os.path.isdir(os.path.join(parameter_folder_str, parameter_value)) and
+                         str_is_float(parameter_value.split('_')[-2]) and str_is_float(parameter_value.split('_')[-1])]
+    #experiment_values.sort()
+
+    experiment_folders = [os.path.join(parameter_folder_str, param + '_' + str(experiment_value.split('_')[0]) +
+                                       '_' + str(experiment_value.split('_')[1])) for experiment_value
+                          in experiment_values]
     experiment_sto_files = [get_experiment_sto_file(experiment_folder) for experiment_folder in experiment_folders]
 
     experiment_sto_success = []
