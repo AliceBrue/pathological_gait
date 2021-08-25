@@ -1,3 +1,0 @@
-# This script can be used to synchronize two folders via ssh. Modified and new files on the first folder will be updated on the second folder.
-
-rsync -ah -e ssh benghorb@biorobpclab3.epfl.ch:~/SCONE/results/results_evaluated /Users/Selim/Documents/Etudes/Automne\ 2020\ Master\ Robotique/BioRob\ Semester\ Project/linux_results_folder
