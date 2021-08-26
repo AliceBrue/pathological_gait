@@ -119,17 +119,20 @@ def assess_parameter_folder_1d(parameter_folder, side):
     '''
     parameter_folder_str = str(parameter_folder)
     param = parameter_folder_str.split("\\")[-1]
+    param = param.split('.')[0]
+
     experiment_values = [parameter_value.split('_')[-1] for parameter_value in os.listdir(parameter_folder_str)
                          if os.path.isdir(os.path.join(parameter_folder_str, parameter_value)) and
-                         str_is_float(parameter_value.split('_')[-1])]
+                         len(parameter_value.split('.')) > 1]
+    experiment_values = [parameter_value.split('.')[0] for parameter_value in experiment_values]
 
     # sort experiments ascendingly
     experiment_values_idx_sorted = np.argsort([float(experiment_value) for experiment_value in
                                                experiment_values])
     experiment_values = [experiment_values[idx] for idx in experiment_values_idx_sorted]
 
-    experiment_folders = [os.path.join(parameter_folder_str, param+'_'+str(experiment_value)) for experiment_value in
-                          experiment_values]
+    experiment_folders = [os.path.join(parameter_folder_str, param+'_'+str(experiment_value) +
+                                       '.f0914m.GH2010v8.S10W.D15.I') for experiment_value in experiment_values]
     experiment_sto_files = [get_experiment_sto_file(experiment_folder) for experiment_folder in experiment_folders]
 
     experiment_sto_success = []
@@ -299,16 +302,17 @@ def assess_parameter_folder_2d(parameter_folder, side):
     '''
     parameter_folder_str = str(parameter_folder)
     param = parameter_folder_str.split("\\")[-1]
+    param = param.split('.')[0]
 
     experiment_values = [parameter_value.split('_')[-2] + '_' + parameter_value.split('_')[-1] for parameter_value in
                          os.listdir(parameter_folder_str) if
                          os.path.isdir(os.path.join(parameter_folder_str, parameter_value)) and
-                         str_is_float(parameter_value.split('_')[-2]) and str_is_float(parameter_value.split('_')[-1])]
-    #experiment_values.sort()
+                         len(parameter_value.split('.')) > 1]
+    experiment_values = [parameter_value.split('.')[0] for parameter_value in experiment_values]
 
     experiment_folders = [os.path.join(parameter_folder_str, param + '_' + str(experiment_value.split('_')[0]) +
-                                       '_' + str(experiment_value.split('_')[1])) for experiment_value
-                          in experiment_values]
+                                       '_' + str(experiment_value.split('_')[1]) + '.f0914m.GH2010v8.S10W.D15.I')
+                          for experiment_value in experiment_values]
     experiment_sto_files = [get_experiment_sto_file(experiment_folder) for experiment_folder in experiment_folders]
 
     experiment_sto_success = []
@@ -425,7 +429,7 @@ def assess_parameter_folder_2d(parameter_folder, side):
     for metric in experiments_dict:
         df2 = experiments_df[metric].reset_index().pivot(columns='swing', index='stance', values=metric)
         df2.interpolate(method='akima', axis=1, inplace=True, limit_direction='both')
-        if folder_name in ["stance_KF_swing_KF", "stance_TA_KS_swing_TA_KS"]:
+        if folder_name in ["stance_KF_stance_KL", "stance_TA_KS_swing_TA_KS"]:
             df2 = df2[df2.columns[::-1]]
         else:
             df2 = df2[::-1]
@@ -433,24 +437,24 @@ def assess_parameter_folder_2d(parameter_folder, side):
         map = "RdBu"
         if metric in ["ME_gc", "ME_st", "ME_sw"]:
             if folder_name == "stance_KF_stance_KL":
-                ax = sns.heatmap(df2, cmap=map, vmin=-4, vmax=4, center=experiments_dict_healthy[metric])
+                ax = sns.heatmap(df2, cmap=map, vmin=-4, vmax=8, center=experiments_dict_healthy[metric])
                 ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
             elif folder_name == "stance_TA_KS_swing_TA_KS":
-                ax = sns.heatmap(df2, cmap=map, vmin=-10, vmax=4, center=experiments_dict_healthy[metric])
+                ax = sns.heatmap(df2, cmap=map, vmin=-8, vmax=4, center=experiments_dict_healthy[metric])
                 ax.set(xlabel='swing TA KS [%]', ylabel='stance TA KS [%]')
             else:
-                ax = sns.heatmap(df2, cmap=map, vmin=-10, vmax=4, center=experiments_dict_healthy[metric])
+                ax = sns.heatmap(df2, cmap=map, vmin=-8, vmax=4, center=experiments_dict_healthy[metric])
                 ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
                        ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
         else:
             if folder_name == "stance_KF_stance_KL":
-                ax = sns.heatmap(df2, cmap=map, vmin=0, vmax=4, center=experiments_dict_healthy[metric])
+                ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
                 ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
             elif folder_name == "stance_TA_KS_swing_TA_KS":
-                ax = sns.heatmap(df2, cmap=map+"_r", vmin=0, center=experiments_dict_healthy[metric])
+                ax = sns.heatmap(df2, cmap=map+"_r", center=experiments_dict_healthy[metric])
                 ax.set(xlabel='swing TA KS [%]', ylabel='stance TA KS [%]')
             else:
-                ax = sns.heatmap(df2, cmap=map+"_r", vmin=0, center=experiments_dict_healthy[metric])
+                ax = sns.heatmap(df2, cmap=map+"_r", center=experiments_dict_healthy[metric])
                 ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
                        ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
 

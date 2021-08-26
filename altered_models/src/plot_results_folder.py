@@ -29,4 +29,3 @@ elif case == '2D':
     parameter_folders_2d = list(set(parameter_folders_2d))
     for parameter_folder in parameter_folders_2d:
         arf.assess_parameter_folder_2d(parameter_folder, side)
-

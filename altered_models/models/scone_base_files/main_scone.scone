@@ -2,7 +2,7 @@ CmaOptimizer {
 	
 	signature_prefix = DATE_TIME
 	
-	max_generations = 3000
+	max_generations = 500
 
 	init_file = parameters/optimisation.par  
 	use_init_file = true

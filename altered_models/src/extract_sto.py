@@ -340,7 +340,7 @@ def me(sto_file, sto_file_healthy, var_name, side):
 
 
 def me_phases(sto_file, sto_file_healthy, var_name, side):
-    """Computes the mean ME between altered and healthy ankle angle during stance and swing phases
+    """Computes the mean ME between altered and healthy ankle angle during late stance and swing phases
     Parameters
     --------
     sto_file: (string) path to the sto_file of interest
@@ -356,10 +356,9 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
     std_sw_me: (flaot) ME std during swing phase
     """
     var_names, var_tab = extract_sto(sto_file_healthy)
-    h_stance_var, h_swing_var, h_gait_cycle, h_stance_end = mean_gait_phases(var_names, var_tab, var_name,
-                                                                                     side)
-    st_h_stance_var, st_h_swing_var, st_h_gait_cycle, st_h_stance_end, _ = me_mean_gait_phases(var_names, var_tab, var_name,
-                                                                                     side)
+    h_stance_var, h_swing_var, h_gait_cycle, h_stance_end = mean_gait_phases(var_names, var_tab, var_name, side)
+    st_h_stance_var, st_h_swing_var, st_h_gait_cycle, st_h_stance_end, _ = me_mean_gait_phases(var_names, var_tab,
+                                                                                               var_name, side)
     var_names, var_tab = extract_sto(sto_file)
         
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
@@ -368,8 +367,8 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
     var_index = np.where(var_names == var_name)[0][0]
     var = var_tab[:, var_index]
 
-    st_mae = []
-    sw_mae = []
+    st_me = []
+    sw_me = []
 
     if side == 'l':
         stance_starts = lstance_starts
@@ -388,14 +387,14 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
                 av_stance_var[t, :] = np.interp(np.arange(h_stance_end), np.arange(len(cycle_var)), cycle_var)
                 cycle_var = var[stance_ends[t]:stance_starts[t+1]]
                 av_swing_var[t, :] = np.interp(np.arange(h_gait_cycle-h_stance_end), np.arange(len(cycle_var)), cycle_var)
-                sw_mae.append(np.mean((av_swing_var[t, :]- h_swing_var)))
+                sw_me.append(np.mean((av_swing_var[t, :]- h_swing_var)))
             else:
                 if t < len(stance_ends) - 1:
                     cycle_var = var[stance_starts[t]:stance_ends[t+1]]
                     av_stance_var[t, :] = np.interp(np.arange(h_stance_end), np.arange(len(cycle_var)), cycle_var)
                     cycle_var = var[stance_ends[t+1]:stance_starts[t+1]]
                     av_swing_var[t, :] = np.interp(np.arange(h_gait_cycle-h_stance_end), np.arange(len(cycle_var)), cycle_var)
-                sw_mae.append(np.mean((av_swing_var[t, :]- h_swing_var)))
+                sw_me.append(np.mean((av_swing_var[t, :]- h_swing_var)))
 
         if side == 'l':
             stance_starts = st_lstance_starts
@@ -414,16 +413,16 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
                     av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end), np.arange(len(cycle_var)), cycle_var)
                     cycle_var = var[stance_ends[t]:stance_starts[t+1]]
                     av_swing_var[t, :] = np.interp(np.arange(st_h_gait_cycle-st_h_stance_end), np.arange(len(cycle_var)), cycle_var)
-                    st_mae.append(np.mean((av_stance_var[t, :]- st_h_stance_var)))
+                    st_me.append(np.mean((av_stance_var[t, :]- st_h_stance_var)))
                 else:
                     if t < len(stance_ends) - 1:
                         cycle_var = var[stance_starts[t]:stance_ends[t+1]]
                         av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end), np.arange(len(cycle_var)), cycle_var)
                         cycle_var = var[stance_ends[t+1]:stance_starts[t+1]]
                         av_swing_var[t, :] = np.interp(np.arange(st_h_gait_cycle-st_h_stance_end), np.arange(len(cycle_var)), cycle_var)
-                    st_mae.append(np.mean((av_stance_var[t, :]- st_h_stance_var)))
+                    st_me.append(np.mean((av_stance_var[t, :]- st_h_stance_var)))
         
-            return np.mean(st_mae)*180/np.pi, np.std(st_mae)*180/np.pi, np.mean(sw_mae)*180/np.pi, np.std(sw_mae)*180/np.pi
+            return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi, np.mean(sw_me)*180/np.pi, np.std(sw_me)*180/np.pi
     
     else:
         return None, None, None, None

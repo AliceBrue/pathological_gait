@@ -1,5 +1,5 @@
 # altered_models
-This repository contains source code for the shell scripts and python scripts used to generate and optimise SCONE files for multiple altered models, and plot optimisation results.
+This repository contains the shell scripts and python scripts used to generate and optimise SCONE files for multiple altered models, and plot optimisation results.
 
 ## Folder Content
 + **exports:** This folder contains structured experiment folders with SCONE files used to run optimisation for each altered model of interest.
