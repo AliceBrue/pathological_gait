@@ -1,7 +1,7 @@
 CmaOptimizer {
 	
 signature_prefix = "stance_KS_swing_KS_300_150"	
-	max_generations = 3000
+	max_generations = 500
 
 	init_file = parameters/optimisation.par  
 	use_init_file = true

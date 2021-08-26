@@ -28,11 +28,11 @@ case = '2D'  # '1D' or '2D'
 # Altered parameter
 param_1 = 'KS'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL', 'weak_KF', 'max_isometric_force' or 'optimal_fiber_length'
 phase_1 = 'stance'  # 'stance' or 'swing'
-key_values_1 = range(150, 400, 50)
+key_values_1 = range(100, 400, 50)
 # Second altered parameter if 2D
 param_2 = 'KS'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL' or 'weak_KF'
 phase_2 = 'swing'   # 'stance' or 'swing'
-key_values_2 = range(150, 400, 50)
+key_values_2 = range(100, 350, 50)
 
 # generate controllers with altered reflex parameters
 if param_1 not in ['max_isometric_force', 'optimal_fiber_length']:
