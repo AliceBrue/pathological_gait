@@ -7,7 +7,7 @@ from pathlib import Path
 import assess_results_folder as arf
 
 # Set this to '1D' or '2D' to analyze 1D or 2D experiment results
-case = '2D'
+case = '1D'
 side = 'l'  # 'l' or 'r' for left or right leg plots
 
 results_folder = "../results/"

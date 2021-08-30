@@ -212,14 +212,14 @@ def plot_column_std_phases(column_values, std_values, st_column_values, st_std_v
         ax.errorbar(np.array(parameter_values_extended) + delta / 10, column_values_extended, column_std_extended,
                     color="k", marker='D', linestyle="None", label="gait cycle")
         ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="dimgrey", marker='D', linestyle="None", label="stance")
+                    color="darkgrey", marker='D', linestyle="None", label="stance")
         ax.errorbar(np.array(parameter_values_extended) - delta / 10, sw_column_values_extended, sw_column_std_extended,
                     color="tab:orange", marker='D', linestyle="None", label="swing")
     else:
         ax.errorbar(np.array(parameter_values_extended) - delta / 10, column_values_extended, column_std_extended,
                     color="k", marker='D', linestyle="None", label="gait cycle")
         ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="dimgrey", marker='D', linestyle="None", label="stance")
+                    color="darkgrey", marker='D', linestyle="None", label="stance")
         ax.errorbar(np.array(parameter_values_extended) + delta / 10, sw_column_values_extended, sw_column_std_extended,
                     color="tab:orange", marker='D', linestyle="None", label="swing")
 
@@ -294,7 +294,7 @@ def plot_column_std_two_muscles(column_values_1, std_values_1, column_values_2, 
     delta = parameter_values_extended[1] - parameter_values_extended[0]
 
     ax.errorbar(np.array(parameter_values_extended) - delta / 12, st_column_values_extended, st_column_std_extended,
-                color="k", marker='D', linestyle="None", label="SOL")
+                color="dimgrey", marker='D', linestyle="None", label="SOL")
     ax2 = ax.twinx()
     ax2.errorbar(np.array(parameter_values_extended) + delta / 12, sw_column_values_extended, sw_column_std_extended,
                  color="darkred", marker='D', linestyle="None", label="GAS")
@@ -305,7 +305,7 @@ def plot_column_std_two_muscles(column_values_1, std_values_1, column_values_2, 
         ax.invert_xaxis()
 
     y_label = "spasticity index (" + side + ")"
-    ax.set_ylabel("SOL " + y_label, color="k")
+    ax.set_ylabel("SOL " + y_label, color="dimgrey")
     ax2.set_ylabel("GAS " + y_label, color="darkred")
     if inv:
         ax.set_title(y_label + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
@@ -420,8 +420,8 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
         ax.plot(time[:len(av_var)] * 100 / time[av_gait_cycle], av_var, label=label,
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
-    ax.axhline(y=24, xmin=time[lst] / time[av_gait_cycle], xmax=(time[lend + 2]) / time[av_gait_cycle], color="grey",
-               linewidth=4, label="MS and PS")
+    ax.axhline(y=24, xmin=time[lst] / time[av_gait_cycle], xmax=(time[lend + 2]) / time[av_gait_cycle],
+               color="darkgrey", linewidth=4, label="MS and PS")
     ax.set_ylim((-45, 25))
     handles, labels = ax.get_legend_handles_labels()
     # sort both labels and handles by labels

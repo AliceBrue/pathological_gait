@@ -471,11 +471,11 @@ def assess_parameter_folder_2d(parameter_folder, side):
         elif metric == 'spasticity_index_gas':
             title = 'mean GAS spasticity index ('+side+') \n for '+par
         elif metric == 'ME_gc':
-            title = 'mean ME over the gait cycle ('+side+') \n for '+par
+            title = 'mean ME ('+side+') over the gait cycle \n for '+par
         elif metric == 'ME_st':
-            title = 'mean ME over the stance phase ('+side+') \n for '+par
+            title = 'mean ME ('+side+') over the stance phase \n for '+par
         elif metric == 'ME_sw':
-            title = 'mean ME over the swing phase ('+side+') \n for '+par
+            title = 'mean ME ('+side+') over the swing phase \n for '+par
         else:
             title = metric
         plt.title(title)
