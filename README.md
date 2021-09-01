@@ -1,4 +1,4 @@
-# git_paper
+# pathological_gait
 This repository contains all SCONE files and python scripts to reproduce the results of "Investigation of neural and biomechanical parameters leading to pathological toe and heel gaits through neuromusculoskeletal modeling" paper.
 The work was undergone by Alice Bruel and Salim Ben Ghorbel at the EPFL Biorobotics Laboraboratory.
 
