@@ -377,16 +377,17 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
     var_tab_list.append(var_tab)
     time_list.append(time)
     _, _, _, lend, lst = extract_sto.me_mean_gait_phases(var_names, var_tab, var_list, side)
-    av_stance_var, av_swing_var, av_gait_cycle, av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
+    h_av_stance_var, h_av_swing_var, h_av_gait_cycle, h_av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
                                                                                              var_list, side)
-    av_var_h = np.concatenate((av_stance_var, av_swing_var))
+    av_var_h = np.concatenate((h_av_stance_var, h_av_swing_var))
 
     if "angle" in var_list:
         av_var_h = np.multiply(av_var_h, 180 / np.pi)
     label = str(parameter_value)
-    ax.plot(time[:len(av_var_h)] * 100 / time[av_gait_cycle], av_var_h, label=label, color='black', linewidth=2,
+    ax.plot(time[:len(av_var_h)] * 100 / time[h_av_gait_cycle], av_var_h, label=label, color='black', linewidth=2,
             linestyle='dashed', zorder=10)
-    ax.axvspan(time[av_stance_end] * 100 / time[av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
+    ax.axvspan(time[h_av_stance_end] * 100 / time[h_av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
+
     if min_value > healthy_value:
         hex_list = ['#0000ff', '#ff0000']
     else:
@@ -420,7 +421,7 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
         ax.plot(time[:len(av_var)] * 100 / time[av_gait_cycle], av_var, label=label,
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
-    ax.axhline(y=24, xmin=time[lst] / time[av_gait_cycle], xmax=(time[lend + 2]) / time[av_gait_cycle],
+    ax.axhline(y=24, xmin=time[lst]/ time[h_av_gait_cycle], xmax=time[h_av_stance_end]/ time[h_av_gait_cycle],
                color="tab:cyan", linewidth=4, label="MS and PS")
     ax.set_ylim((-45, 25))
     handles, labels = ax.get_legend_handles_labels()
