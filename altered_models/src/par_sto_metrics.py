@@ -212,14 +212,14 @@ def plot_column_std_phases(column_values, std_values, st_column_values, st_std_v
         ax.errorbar(np.array(parameter_values_extended) + delta / 10, column_values_extended, column_std_extended,
                     color="k", marker='D', linestyle="None", label="gait cycle")
         ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="darkgrey", marker='D', linestyle="None", label="stance")
+                    color="tab:cyan", marker='D', linestyle="None", label="stance")
         ax.errorbar(np.array(parameter_values_extended) - delta / 10, sw_column_values_extended, sw_column_std_extended,
                     color="tab:orange", marker='D', linestyle="None", label="swing")
     else:
         ax.errorbar(np.array(parameter_values_extended) - delta / 10, column_values_extended, column_std_extended,
                     color="k", marker='D', linestyle="None", label="gait cycle")
         ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="darkgrey", marker='D', linestyle="None", label="stance")
+                    color="tab:cyan", marker='D', linestyle="None", label="stance")
         ax.errorbar(np.array(parameter_values_extended) + delta / 10, sw_column_values_extended, sw_column_std_extended,
                     color="tab:orange", marker='D', linestyle="None", label="swing")
 
@@ -421,7 +421,7 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
     ax.axhline(y=24, xmin=time[lst] / time[av_gait_cycle], xmax=(time[lend + 2]) / time[av_gait_cycle],
-               color="darkgrey", linewidth=4, label="MS and PS")
+               color="tab:cyan", linewidth=4, label="MS and PS")
     ax.set_ylim((-45, 25))
     handles, labels = ax.get_legend_handles_labels()
     # sort both labels and handles by labels
