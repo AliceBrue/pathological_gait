@@ -72,7 +72,7 @@ def get_continuous_cmap(hex_list, float_list=None):
     return cmp
 
 
-def plot_healthy_clinical_angles(ax):
+def plot_healthy_clinical_angles(ax, var_name):
     '''Plots the value ranges of ankle angle from healthy clinical observations.
 
     Parameters
@@ -83,27 +83,53 @@ def plot_healthy_clinical_angles(ax):
     -------
     None.
     '''
-    norm_min = [-7.7, -9.1, -10.3, -9.9, -8.2, -6.1, -4.2, -2.5,
-                -1.0, 0.2, 1.4, 2.3, 3.1, 3.7, 4.3, 4.8, 5.3, 5.7, 6.1, 6.4,
-                6.7, 7.0, 7.1, 6.9, 6.3, 4.8, 2.1, -2.2, -8.6, -16.2, -23.3,
-                -27.6, -28.6, -26.7, -22.9, -18.7, -14.7, -11.1, -8.1, -5.6,
-                -3.7, -2.4, -1.7, -1.7, -2.4, -3.4, -4.6, -5.7, -6.4, -7.0,
-                -7.8]
-    norm_mean = [-2.1, -3.9, -5.6, -5.6, -4.1, -2.1, -0.2, 1.5,
-                 2.9, 4.1, 5.2, 6.1, 6.8, 7.4, 8.0, 8.6, 9.1, 9.7,
-                 10.2, 10.7, 11.1, 11.5, 11.8, 11.8, 11.5, 10.4,
-                 8.4, 4.9, -0.2, -6.9, -13.8, -18.5, -19.8, -18.0,
-                 -14.7, -11.2, -7.9, -4.9, -2.4, -0.3, 1.1, 2.1,
-                 2.5, 2.4, 1.8, 1.0, 0.1, -0.6, -1.1, -1.4, -2.3]
-    norm_max = [3.5, 1.3, -0.8, -1.3, -0.1, 1.9, 3.8, 5.5, 6.9,
-                8.0, 9.0, 9.8, 10.5, 11.1, 11.8, 12.4, 13.0, 13.7,
-                14.3, 15.0, 15.5, 16.1, 16.5, 16.8, 16.7, 16.0,
-                14.6, 12.1, 8.1, 2.4, -4.3, -9.5, -10.9, -9.3,
-                -6.5, -3.7, -1.1, 1.3, 3.4, 4.9, 6.0, 6.6, 6.7,
-                6.4, 5.9, 5.4, 4.8, 4.5, 4.3, 4.1, 3.1]
-    std = np.array(norm_max) - np.array(norm_mean)
-    norm_max = np.array(norm_mean) + 2 * std
-    norm_min = np.array(norm_mean) - 2 * std
+    if var_name in ['ankle_angle_r', 'ankle_angle_l']:
+        norm_min = [-7.7, -9.1, -10.3, -9.9, -8.2, -6.1, -4.2, -2.5,
+                    -1.0, 0.2, 1.4, 2.3, 3.1, 3.7, 4.3, 4.8, 5.3, 5.7, 6.1, 6.4,
+                    6.7, 7.0, 7.1, 6.9, 6.3, 4.8, 2.1, -2.2, -8.6, -16.2, -23.3,
+                    -27.6, -28.6, -26.7, -22.9, -18.7, -14.7, -11.1, -8.1, -5.6,
+                    -3.7, -2.4, -1.7, -1.7, -2.4, -3.4, -4.6, -5.7, -6.4, -7.0,
+                    -7.8]
+        norm_mean = [-2.1, -3.9, -5.6, -5.6, -4.1, -2.1, -0.2, 1.5,
+                     2.9, 4.1, 5.2, 6.1, 6.8, 7.4, 8.0, 8.6, 9.1, 9.7,
+                     10.2, 10.7, 11.1, 11.5, 11.8, 11.8, 11.5, 10.4,
+                     8.4, 4.9, -0.2, -6.9, -13.8, -18.5, -19.8, -18.0,
+                     -14.7, -11.2, -7.9, -4.9, -2.4, -0.3, 1.1, 2.1,
+                     2.5, 2.4, 1.8, 1.0, 0.1, -0.6, -1.1, -1.4, -2.3]
+        norm_max = [3.5, 1.3, -0.8, -1.3, -0.1, 1.9, 3.8, 5.5, 6.9,
+                    8.0, 9.0, 9.8, 10.5, 11.1, 11.8, 12.4, 13.0, 13.7,
+                    14.3, 15.0, 15.5, 16.1, 16.5, 16.8, 16.7, 16.0,
+                    14.6, 12.1, 8.1, 2.4, -4.3, -9.5, -10.9, -9.3,
+                    -6.5, -3.7, -1.1, 1.3, 3.4, 4.9, 6.0, 6.6, 6.7,
+                    6.4, 5.9, 5.4, 4.8, 4.5, 4.3, 4.1, 3.1]
+        std = np.array(norm_max) - np.array(norm_mean)
+        norm_max = (np.array(norm_mean) + 2 * std)
+        norm_min = (np.array(norm_mean) - 2 * std)
+
+    elif var_name in ['knee_angle_r', 'knee_angle_l']:
+        norm_min = [-0.1, 2.5, 5.3, 8.3, 10.8, 12.3, 13.0, 12.9, 12.4,
+                    11.6, 10.6, 9.4, 8.2, 7.0, 5.8, 4.6, 3.5, 2.5,
+                    1.6, 0.9, 0.5, 0.5, 1.1, 2.2, 3.8, 6.0, 8.7, 12.2,
+                    16.4, 21.5, 27.3, 33.6, 39.9, 45.7, 50.0, 52.5,
+                    53.3, 52.4, 50.1, 46.5, 42.0, 36.5, 30.3, 23.7,
+                    16.8, 10.2, 4.4, 0.2, -2.0, -1.9, -0.2]
+        norm_mean = [5.6, 7.9, 10.9, 14.1, 16.9, 18.6, 19.3, 19.2,
+                     18.6, 17.6, 16.5, 15.2, 13.9, 12.6, 11.3, 10.1,
+                     9.0, 8.0, 7.2, 6.6, 6.2, 6.3, 6.8, 7.9, 9.5,
+                     11.6, 14.5, 18.1, 22.6, 27.9, 33.9, 40.2, 46.3,
+                     51.7, 55.7, 58.2, 59.1, 58.7, 56.9, 53.9, 49.8,
+                     44.7, 38.8, 32.4, 25.5, 18.7, 12.5, 7.6, 4.6,
+                     4.0, 5.4]
+        norm_max = [11.2, 13.4, 16.5, 20.0, 23.0, 24.8, 25.6, 25.5,
+                    24.8, 23.7, 22.4, 21.0, 19.6, 18.2, 16.8, 15.6,
+                    14.6, 13.6, 12.9, 12.3, 12.0, 12.0, 12.5, 13.5,
+                    15.1, 17.3, 20.2, 24.0, 28.8, 34.3, 40.5, 46.8,
+                    52.8, 57.7, 61.4, 63.8, 65.0, 65.0, 63.8, 61.3,
+                    57.6, 52.9, 47.3, 41.0, 34.2, 27.2, 20.5, 14.9,
+                    11.2, 10.0, 11.0]
+        std = np.array(norm_max) - np.array(norm_mean)
+        norm_max = -(np.array(norm_mean) + 2 * std)
+        norm_min = -(np.array(norm_mean) - 2 * std)
 
     time_vector = np.linspace(0, 100, len(norm_min))
     ax.fill_between(time_vector, norm_min, norm_max, facecolor='silver', alpha=0.5, label='clin.', zorder=5)
@@ -121,6 +147,8 @@ def plot_column(column_values, parameter_values, column_name, x_label, export_pa
     export_path: folder path of export_file
     healthy value: value from healthy sto file of interest
     healthy metric: value of the metric for healthy optimisation
+    inv: bool to inverse decreasing parameter values
+    plot: bool to show plot
 
     Returns
     ---------
@@ -151,7 +179,12 @@ def plot_column(column_values, parameter_values, column_name, x_label, export_pa
     y_label = ""
     for s in range(len(column_name.split('_'))):
         y_label = y_label + " " + column_name.split('_')[s]
-    ax.set_ylabel(y_label)
+    if column_name == "speed":
+        ax.set_ylabel(y_label+' [m/s]')
+    elif column_name == "total_time":
+        ax.set_ylabel(y_label+' [s]')
+    else:
+        ax.set_ylabel(y_label)
     if inv:
         ax.set_title(y_label + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
                      + " to " + str(int(min(min(parameter_values), healthy_value))) + "%")
@@ -165,19 +198,27 @@ def plot_column(column_values, parameter_values, column_name, x_label, export_pa
         plt.close(fig)
 
 
-def plot_column_std_phases(column_values, std_values, st_column_values, st_std_values, sw_column_values, sw_std_values,
-                           parameter_values, column_name, x_label, export_path, healthy_value, healthy_metric,
-                           std_healthy, inv=False, plot=False):
+def plot_columns_std(column_values1, std_values1, parameter_values, column_name, x_label, export_path,
+                     healthy_value, healthy_metric, std_healthy, inv=False, column_values2=None, std_values2=None,
+                     healthy_metric2=0, std_healthy2=0, plot=False):
     '''Plots values of a column during gait cycle, stance and swing phases with parameter_values on x axis.
     Parameters
     -------
-    column_values: values to be plotted
+    column_values1: values to be plotted
+    std_values1: values std to be plotted
     parameter_values: values on x axis
     column_name: name of the column, y axis legend
     x_label: name of the parameters
     export_path: folder path of export_file
     healthy value: value from healthy sto file of interest
     healthy metric: value of the metric for healthy optimisation
+    std_healthy: std value of the metric for healthy optimisation
+    inv: bool to inverse decreasing parameter values
+    column_values2: values to be plotted
+    std_values2: values std to be plotted
+    healthy metric2: value of the metric for healthy optimisation
+    std_healthy2: std value of the metric for healthy optimisation
+    plot: bool to show plot
 
     Returns
     -------
@@ -192,36 +233,53 @@ def plot_column_std_phases(column_values, std_values, st_column_values, st_std_v
         elif int(str(int(parameter_values[i]))[-3:]) == 100:
             parameter_values[i] = int(str(int(float(parameter_values[i])))[:-3])
     parameter_values_extended = parameter_values + [healthy_value]
-    st_column_values_extended = st_column_values + [healthy_metric]
-    st_column_std_extended = st_std_values + [std_healthy]
-    sw_column_values_extended = sw_column_values + [healthy_metric]
-    sw_column_std_extended = sw_std_values + [std_healthy]
-    column_values_extended = column_values + [healthy_metric]
-    column_std_extended = std_values + [std_healthy]
-    sorted_idx = np.argsort(parameter_values_extended)
-    st_column_values_extended = [st_column_values_extended[idx] for idx in sorted_idx]
-    sw_column_values_extended = [sw_column_values_extended[idx] for idx in sorted_idx]
-    column_values_extended = [column_values_extended[idx] for idx in sorted_idx]
-    parameter_values_extended = [parameter_values_extended[idx] for idx in sorted_idx]
-    st_column_std_extended = [st_column_std_extended[idx] for idx in sorted_idx]
-    sw_column_std_extended = [sw_column_std_extended[idx] for idx in sorted_idx]
-    column_std_extended = [column_std_extended[idx] for idx in sorted_idx]
+    column_values_extended1 = column_values1 + [healthy_metric]
+    column_std_extended1 = std_values1 + [std_healthy]
+    if column_values2 is not None:
+        column_values_extended2 = column_values2 + [healthy_metric2]
+        column_std_extended2 = std_values2 + [std_healthy2]
 
+    sorted_idx = np.argsort(parameter_values_extended)
+    parameter_values_extended = [parameter_values_extended[idx] for idx in sorted_idx]
+    column_values_extended1 = [column_values_extended1[idx] for idx in sorted_idx]
+    column_std_extended1 = [column_std_extended1[idx] for idx in sorted_idx]
+    if column_values2 is not None:
+        column_std_extended2 = [column_std_extended2[idx] for idx in sorted_idx]
+        column_std_extended2 = [column_std_extended2[idx] for idx in sorted_idx]
+
+    if column_name.split("_")[0] == "ME" and column_values2 is None:
+        label1 = 'ME ST'
+        color1 = 'tab:cyan'
+    elif column_name.split("_")[0] == "ME" and column_values2 is not None:
+        label1 = 'min ES'
+        color1 = 'darkorange'
+        label2 = 'ME ST'
+        color2 = 'tab:cyan'
+    elif column_name.split("_")[0] == "mstance":
+        label1 = 'stance T'
+        color1 = 'tab:blue'
+        label2 = 'step L'
+        color2 = 'dimgrey'
+    elif column_name.split("_")[0] == "spasticity":
+        label1 = 'SOL'
+        color1 = 'dimgrey'
+        label2 = 'GAS'
+        color2 = 'darkred'
     delta = parameter_values_extended[1] - parameter_values_extended[0]
     if inv:
-        ax.errorbar(np.array(parameter_values_extended) + delta / 10, column_values_extended, column_std_extended,
-                    color="k", marker='D', linestyle="None", label="gait cycle")
-        ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="tab:cyan", marker='D', linestyle="None", label="stance")
-        ax.errorbar(np.array(parameter_values_extended) - delta / 10, sw_column_values_extended, sw_column_std_extended,
-                    color="tab:orange", marker='D', linestyle="None", label="swing")
+        ax.errorbar(np.array(parameter_values_extended) + delta/12, column_values_extended1, column_std_extended1,
+                    color=color1, marker='D', linestyle="None", label=label1)
+        if column_values2 is not None:
+            ax2 = ax.twinx()
+            ax2.errorbar(np.array(parameter_values_extended) - delta/12, column_values_extended2, column_std_extended2,
+                        color=color2, marker='D', linestyle="None", label=label2)
     else:
-        ax.errorbar(np.array(parameter_values_extended) - delta / 10, column_values_extended, column_std_extended,
-                    color="k", marker='D', linestyle="None", label="gait cycle")
-        ax.errorbar(np.array(parameter_values_extended), st_column_values_extended, st_column_std_extended,
-                    color="tab:cyan", marker='D', linestyle="None", label="stance")
-        ax.errorbar(np.array(parameter_values_extended) + delta / 10, sw_column_values_extended, sw_column_std_extended,
-                    color="tab:orange", marker='D', linestyle="None", label="swing")
+        ax.errorbar(np.array(parameter_values_extended) - delta/12, column_values_extended1, column_std_extended1,
+                    color=color1, marker='D', linestyle="None", label=label1)
+        if column_values2 is not None:
+            ax2 = ax.twinx()
+            ax2.errorbar(np.array(parameter_values_extended) + delta/12, column_values_extended2, column_std_extended2,
+                        color=color2, marker='D', linestyle="None", label=label2)
 
     ax.set_xlabel(x_label + " [%]")
     ax.set_xticks(parameter_values_extended)
@@ -229,115 +287,57 @@ def plot_column_std_phases(column_values, std_values, st_column_values, st_std_v
         ax.invert_xaxis()
 
     if column_name.split("_")[0] == "ME":
-        y_label = "ME " + "(" + column_name.split("_")[1] + ") [°]"
-    else:
-        y_label = ""
-        for s in range(len(column_name.split('_')) - 1):
-            y_label = y_label + " " + column_name.split('_')[s]
-        y_label = y_label + " (" + column_name.split('_')[-1] + ")"
-    ax.set_ylabel(y_label)
-    if column_name.split("_")[0] == "ME":
-        y_label = "ME " + "(" + column_name.split("_")[1] + ")"
+        title = 'Ankle comparison'
+        if column_values2 is not None:
+            y_label1 = "min angle ES " + "(" + column_name.split("_")[1] + ") [°]"
+            y_label2 = "ME ST " + "(" + column_name.split("_")[1] + ") [°]"
+        else:
+            y_label1 = "ME ST " + "(" + column_name.split("_")[1] + ") [°]"
+    elif column_name.split("_")[0] == "mstance":
+        title = 'Gait features'
+        y_label1 = "stance period (T) [s]"
+        y_label2 = "step length (L) [m]"
+    elif column_name.split("_")[0] == "spasticity":
+        title = 'Spasticity indexes'
+        y_label1 = "SOL spasticity index (" + column_name.split("_")[1] + ")"
+        y_label2 = "GAS spasticity index (" + column_name.split("_")[1] + ")"
+    ax.set_ylabel(y_label1, color=color1)
+    if column_values2 is not None:
+        ax2.set_ylabel(y_label2, color=color2)
+        ax2.grid(None)
     if inv:
-        ax.set_title(y_label + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
+        ax.set_title(title + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
                      + " to " + str(int(min(min(parameter_values), healthy_value))) + "%")
     else:
-        ax.set_title(y_label + " for" + x_label + " from " + str(int(min(min(parameter_values), healthy_value)))
+        ax.set_title(title + " for" + x_label + " from " + str(int(min(min(parameter_values), healthy_value)))
                      + " to " + str(int(max(max(parameter_values), healthy_value))) + "%")
 
-    ax.legend()
+    if column_values2 is not None:
+        lines, labels = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax2.legend(lines + lines2, labels + labels2)
     plt.tight_layout()
-    plt.savefig(os.path.join(export_path, column_name + '_std_phases.png'))
+    plt.savefig(os.path.join(export_path, column_name + '_std.png'))
     if not plot:
         plt.close(fig)
 
 
-def plot_column_std_two_muscles(column_values_1, std_values_1, column_values_2, std_values_2, parameter_values,
-                                column_name, x_label, export_path, healthy_value, healthy_metric_1, healthy_metric_2,
-                                std_healthy_1, std_healthy_2, side, inv=False, plot=False):
-    '''Plots values of a column of both soleus and gastroc muscles with parameter_values on x axis.
-    sto_file: (string) path to sto_file
-    Parameters
-    -------
-    column_values: values to be plotted
-    parameter_values: values on x axis
-    column_name: name of the column, y axis legend
-    x_label: name of the parameters
-    export_path: folder path of export_file
-    healthy value: value from healthy sto file of interest
-    healthy metric: value of the metric for healthy optimisation
-
-    Returns
-    -------
-    None
-    '''
-    fig, ax = plt.subplots()
-    for i in range(len(parameter_values)):
-        if int(float(parameter_values[i])) == 100:
-            parameter_values[i] = 100
-        elif int(str(int(float(parameter_values[i])))[:3]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[3:])
-        elif int(str(int(parameter_values[i]))[-3:]) == 100:
-            parameter_values[i] = int(str(int(float(parameter_values[i])))[:-3])
-    parameter_values_extended = parameter_values + [healthy_value]
-    column_values_extended_1 = column_values_1 + [healthy_metric_1]
-    column_std_extended_1 = std_values_1 + [std_healthy_1]
-    column_values_extended_2 = column_values_2 + [healthy_metric_2]
-    column_std_extended_2 = std_values_2 + [std_healthy_2]
-    sorted_idx = np.argsort(parameter_values_extended)
-    st_column_values_extended = [column_values_extended_1[idx] for idx in sorted_idx]
-    sw_column_values_extended = [column_values_extended_2[idx] for idx in sorted_idx]
-    parameter_values_extended = [parameter_values_extended[idx] for idx in sorted_idx]
-    st_column_std_extended = [column_std_extended_1[idx] for idx in sorted_idx]
-    sw_column_std_extended = [column_std_extended_2[idx] for idx in sorted_idx]
-
-    delta = parameter_values_extended[1] - parameter_values_extended[0]
-
-    ax.errorbar(np.array(parameter_values_extended) - delta / 12, st_column_values_extended, st_column_std_extended,
-                color="dimgrey", marker='D', linestyle="None", label="SOL")
-    ax2 = ax.twinx()
-    ax2.errorbar(np.array(parameter_values_extended) + delta / 12, sw_column_values_extended, sw_column_std_extended,
-                 color="darkred", marker='D', linestyle="None", label="GAS")
-
-    ax.set_xlabel(x_label + " [%]")
-    ax.set_xticks(parameter_values_extended)
-    if inv:
-        ax.invert_xaxis()
-
-    y_label = "spasticity index (" + side + ")"
-    ax.set_ylabel("SOL " + y_label, color="dimgrey")
-    ax2.set_ylabel("GAS " + y_label, color="darkred")
-    if inv:
-        ax.set_title(y_label + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
-                     + " to " + str(int(min(min(parameter_values), healthy_value))) + "%")
-    else:
-        ax.set_title(y_label + " for" + x_label + " from " + str(int(min(min(parameter_values), healthy_value)))
-                     + " to " + str(int(max(max(parameter_values), healthy_value))) + "%")
-
-    lines, labels = ax.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines + lines2, labels + labels2)
-    ax2.grid(None)
-    plt.tight_layout()
-    plt.savefig(os.path.join(export_path, column_name + '.png'))
-    if not plot:
-        plt.close(fig)
-
-
-def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, export_path, healthy_sto, healthy_value,
-                 inv=False, plot=False):
-    '''Plots averaged variables during gait cycle, for multiple sto files
+def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path, healthy_sto, healthy_value,
+                 inv=False, es='es', plot=False):
+    '''Plots averaged variables during gait cycle, for multiple sto files.
     Parameters
     ----------
-    sto_file: path to the sto file of interest
-    var_list: list of variables to plot
-    var_legend: list of legends for the previous variables
+    sto_files: list of path to the sto file of interest
+    parameter_values: values on x axis
+    var_name: list of variables to plot
     side: 'r' or 'l' for right or left variables
-    ylabel: plot y label
     title: plot title
     export_path: folder path of export file
     healthy_sto: path to healthy sto file of interest
     healthy_value: value to healthy parameter
+    inv: bool to inverse decreasing parameter values
+    es: ankle measures to plot
+    plot: bool to show plot
 
     Returns
     -------
@@ -347,12 +347,10 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
     var_tab_list = []
     time_list = []
 
-    mme = []
-    std_me = []
     st_mme = []
     st_std_me = []
-    sw_mme = []
-    sw_std_me = []
+    es_mmin = []
+    es_std_min = []
 
     fig, ax = plt.subplots()
     par_values = parameter_values
@@ -376,12 +374,12 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
     var_names_list.append(var_names)
     var_tab_list.append(var_tab)
     time_list.append(time)
-    _, _, _, lend, lst = extract_sto.me_mean_gait_phases(var_names, var_tab, var_list, side)
+    _, _, _, lend, lst = extract_sto.me_mean_gait_phases(var_names, var_tab, var_name, side)
     h_av_stance_var, h_av_swing_var, h_av_gait_cycle, h_av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
-                                                                                             var_list, side)
+                                                                                             var_name, side)
     av_var_h = np.concatenate((h_av_stance_var, h_av_swing_var))
 
-    if "angle" in var_list:
+    if "angle" in var_name:
         av_var_h = np.multiply(av_var_h, 180 / np.pi)
     label = str(parameter_value)
     ax.plot(time[:len(av_var_h)] * 100 / time[h_av_gait_cycle], av_var_h, label=label, color='black', linewidth=2,
@@ -403,64 +401,92 @@ def plot_mean_gc(sto_files, parameter_values, var_list, side, ylabel, title, exp
         var_tab_list.append(var_tab)
         time_list.append(time)
         av_stance_var, av_swing_var, av_gait_cycle, av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
-                                                                                                 var_list, side)
+                                                                                                 var_name, side)
         av_var = np.concatenate((av_stance_var, av_swing_var))
 
-        mm, std_m = extract_sto.me(sto_file, healthy_sto, var_list, side)
-        st_mm, st_std_m, sw_mm, sw_std_m = extract_sto.me_phases(sto_file, healthy_sto, var_list, side)
-
-        mme.append(mm)
-        std_me.append(std_m)
+        st_mm, st_std_m, sw_mm, sw_std_m = extract_sto.me_phases(sto_file, healthy_sto, var_name, side)
         st_mme.append(st_mm)
         st_std_me.append(st_std_m)
-        sw_mme.append(sw_mm)
-        sw_std_me.append(sw_std_m)
-        if "angle" in var_list:
+
+        es_min, es_smin = extract_sto.min_ankle_es(sto_file, var_name, side)
+        es_mmin.append(es_min)
+        es_std_min.append(es_smin)
+
+        if "angle" in var_name:
             av_var = np.multiply(av_var, 180 / np.pi)
         label = str(parameter_value)
         ax.plot(time[:len(av_var)] * 100 / time[av_gait_cycle], av_var, label=label,
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
-    ax.axhline(y=24, xmin=time[lst]/ time[h_av_gait_cycle], xmax=time[h_av_stance_end]/ time[h_av_gait_cycle],
-               color="tab:cyan", linewidth=4, label="MS and PS")
-    ax.set_ylim((-45, 25))
+    if es == "es":
+        ax.axhline(y=24, xmin=0, xmax=time[lst - 1] / time[h_av_gait_cycle], color="darkorange", linewidth=4,
+                   label="ES")
+    if "ankle" in var_name:
+        xlabel = title
+        ylabel = 'ankle angle'
+        title = "Ankle angle"
+        ax.axhline(y=24, xmin=time[lst] / time[h_av_gait_cycle], xmax=(time[h_av_stance_end]) / time[h_av_gait_cycle],
+                   color="tab:cyan", linewidth=4, label="ST")
+        ax.set_ylim((-45, 25))
+    if "knee" in var_name:
+        xlabel = title
+        ylabel = 'knee angle'
+        title = "Knee angle"
+        ax.axhline(y=9, xmin=time[lst] / time[h_av_gait_cycle], xmax=(time[h_av_stance_end]) / time[h_av_gait_cycle],
+                   color="tab:cyan", linewidth=4, label="ST")
+        ax.set_ylim((-85, 10))
+
     handles, labels = ax.get_legend_handles_labels()
     # sort both labels and handles by labels
-    labls, handls = zip(*sorted(zip(labels[:-1], handles[:-1]), key=lambda t: float(t[0])))
+    if es == 'es':
+        labls, handls = zip(*sorted(zip(labels[:-2], handles[:-2]), key=lambda t: float(t[0])))
+        last = 2
+    else:
+        labls, handls = zip(*sorted(zip(labels[:-1], handles[:-1]), key=lambda t: float(t[0])))
+        last = 1
     if float(labls[0]) < 100:
         labls = labls[::-1]
         handls = handls[::-1]
     Labels = [str(int(float(label))) + " %" for label in labls]
 
     for i in range(len(handles)):
-        if i < len(handles) - 1:
+        if i < len(handles) - last:
             handles[i] = handls[i]
             labels[i] = Labels[i]
-        else:
+        elif es=='es' and i == len(handles)-1:
             handles[i] = handles[-1]
             labels[i] = labels[-1]
-    ax.legend(handles, labels, loc=4)
-    plot_healthy_clinical_angles(ax)
+        elif i == len(handles) - last:
+            handles[i] = handles[-last]
+            labels[i] = labels[-last]
+    ax.legend(handles, labels)
+    plot_healthy_clinical_angles(ax, var_name)
 
-    ax.set_xlabel('Gait cycle [%]')
+    ax.set_xlabel('gait cycle [%]')
+    ax.set_xlim((0, 100))
     ax.set_ylabel(ylabel + " [°]")
     parameter_values = np.array(labls).astype(float).astype(int)
     if inv:
-        ax.set_title(ylabel + " for" + title + " from " + str(max(parameter_values))
+        ax.set_title(title + " for" + xlabel + " from " + str(max(parameter_values))
                      + " to " + str(min(parameter_values)) + "%")
     else:
-        ax.set_title(ylabel + " for" + title + " from " + str(min(parameter_values))
+        ax.set_title(title + " for" + xlabel + " from " + str(min(parameter_values))
                      + " to " + str(max(parameter_values)) + "%")
 
     plt.tight_layout()
-    plt.savefig(os.path.join(export_path, var_list + '.png'))
+    plt.savefig(os.path.join(export_path, var_name + '.png'))
     if not plot:
         plt.close(fig)
 
     # ME
-    if ylabel.split(" ")[1] == "ankle":
-        plot_column_std_phases(mme, std_me, st_mme, st_std_me, sw_mme, sw_std_me, par_values, "ME_" + side, title,
-                               export_path, healthy_value, 0, 0, inv=inv)
+    if ylabel.split(" ")[0] == "ankle":
+        if es == 'es':
+            h_es_min, h_es_smin = extract_sto.min_ankle_es(healthy_sto, var_name, side)
+            plot_columns_std(es_mmin, es_std_min, par_values, "ME_" + side, xlabel, export_path, healthy_value, h_es_min,
+                             h_es_smin, column_values2=st_mme, std_values2=st_std_me, inv=inv)
+        else:
+            plot_columns_std(st_mme, st_std_me, par_values, "ME_" + side, xlabel, export_path, healthy_value, 0, 0,
+                            inv=inv)
 
 
 def get_sto_total_time(sto_file):

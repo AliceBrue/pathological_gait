@@ -15,7 +15,6 @@ import spasticity_index, extract_sto
 def get_experiment_title(parameter_folder):
     '''Returns an experiment title based off the parameter folder and
     its parent folder.
-
     Parameters
     ----------
     parameter_folder: (pathlib.Path) object defining parameter folder path.
@@ -34,7 +33,6 @@ def get_experiment_title(parameter_folder):
 def get_score_list(source_folder):
     '''Returns the child folder list of a source folder and sto scores corresponding
     to each child folder.
-
     Parameters
     ----------
     source_folder: (string) path of source folder.
@@ -54,14 +52,13 @@ def get_score_list(source_folder):
 
 def str_is_float(x):
     '''Returns whether a string can be converted to a float or not.
-
     Parameters
     ----------
     x: (string) potential float.
 
     Returns
     -------
-    bool: True if string can be converted to a float. False otherwise
+    bool: True if string can be converted to a float. False otherwise.
     '''
     try:
         float(x)
@@ -73,10 +70,6 @@ def str_is_float(x):
 def get_healthy_sto():
     '''Returns path to healthy sto file based off parameter folder name.
 
-    Parameters
-    ----------
-    parameter_folder: (pathlib.Path) object defining parameter folder path.
-
     Returns
     -------
     string: path to healthy sto file.
@@ -85,19 +78,18 @@ def get_healthy_sto():
     return '../models/optimisation/optimisation_0.6.sto'
 
 
-def get_experiment_sto_file(experiment_folder):
-    '''Returns the path to the sto file found under experiment_folder path
-
+def get_experiment_sto_file(parameter_folder):
+    '''Returns the path to the sto file found under experiment_folder path.
     Parameters
     ----------
-    experiment_folder: (string) experiment folder path.
+    parameter_folder: (string) experiment folder path.
 
     Returns
     -------
     sto_file_str: (string) path to sto file found under experiment_folder.
     '''
-    sto_files_str = [str(sto_file) for sto_file in Path(experiment_folder).rglob('*.par.sto')]
-    assert len(sto_files_str) >= 1, str(experiment_folder) + '\n' + str(sto_files_str)
+    sto_files_str = [str(sto_file) for sto_file in Path(parameter_folder).rglob('*.par.sto')]
+    assert len(sto_files_str) >= 1, str(parameter_folder) + '\n' + str(sto_files_str)
     sto_file_str = sto_files_str[0]
     
     return sto_file_str
@@ -107,10 +99,9 @@ def assess_parameter_folder_1d(parameter_folder, side):
     '''Assesses the necessary metrics of a 1d experiment parameter folder
     and analyzes performance in function of parameter values. It then exports
     results in a report folder.
-
     Parameters
     ----------
-    experiment_folder: (string) experiment folder path.
+    parameter_folder: (string) experiment folder path.
     side: (sting) 'l' or 'r' for left or right leg
 
     Returns
@@ -152,6 +143,13 @@ def assess_parameter_folder_1d(parameter_folder, side):
     spasticity_idx_gas = []
     spasticity_std_gas = []
 
+    # gait features
+    mstep_length = []
+    sstep_length = []
+    gspeed = []
+    mstance_period = []
+    sstance_period = []
+
     # altered models metrics
     for idx in range(len(experiment_sto_files)):
         experiment_sto = experiment_sto_files[idx]
@@ -161,16 +159,25 @@ def assess_parameter_folder_1d(parameter_folder, side):
         experiment_scores.append(float(experiment_sto.rstrip('.par.sto').split('_')[-1]))
         total_times.append(psm.get_sto_total_time(experiment_sto))
 
+        # gait features
+        mstep_l, sstep_l, speed = extract_sto.gait_features(experiment_sto)
+        mstep_length.append(mstep_l)
+        sstep_length.append(sstep_l)
+        gspeed.append(speed)
+
+        mstance_p, sstance_p = extract_sto.stance_period(experiment_sto, 'l')
+        mstance_period.append(mstance_p)
+        sstance_period.append(sstance_p)
+
         # spasticity indexes
         spas_idx_sol, spas_std_sol = spasticity_index.all_cycles_spasticity_index(experiment_sto, "soleus", side,
-                                                                                plot=False)
+                                                                                  plot=False)
         spas_idx_gas, spas_std_gas = spasticity_index.all_cycles_spasticity_index(experiment_sto, "gastroc",
-                                                                                        side, plot=False)
+                                                                                  side, plot=False)
         spasticity_idx_sol.append(spas_idx_sol)
         spasticity_std_sol.append(spas_std_sol)
         spasticity_idx_gas.append(spas_idx_gas)
         spasticity_std_gas.append(spas_std_gas)
-
         experiment_sto_success.append(experiment_sto)
         experiment_values_success.append(experiment_values[idx])
         experiment_values_float_success.append(float(experiment_values[idx]))
@@ -181,7 +188,12 @@ def assess_parameter_folder_1d(parameter_folder, side):
                         'spasticity_index_sol': spasticity_idx_sol,
                         'spasticity_std_sol': spasticity_std_sol,
                         'spasticity_index_gas': spasticity_idx_gas,
-                        'spasticity_std_gas': spasticity_std_gas}
+                        'spasticity_std_gas': spasticity_std_gas,
+                        'mstep_length': mstep_length,
+                        'sstep_length': sstep_length,
+                        'speed': gspeed,
+                        'mstance_period': mstance_period,
+                        'sstance_period': sstance_period}
 
     experiments_df = pd.DataFrame.from_dict(experiments_dict, orient='index').T
     
@@ -195,6 +207,9 @@ def assess_parameter_folder_1d(parameter_folder, side):
     score_healthy = float(healthy_sto.rstrip('.par.sto').split('_')[-1])
     total_time_healthy = psm.get_sto_total_time(healthy_sto)
 
+    h_mstep_length, h_sstep_length, h_gspeed = extract_sto.gait_features(healthy_sto)
+    h_mstance_period, h_sstance_period = extract_sto.stance_period(healthy_sto, 'l')
+
     spas_idx_sol_h, spas_std_sol_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "soleus",
                                                                                       side, plot=False)
     spas_idx_gas_h, spas_std_gas_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "gastroc",
@@ -205,26 +220,31 @@ def assess_parameter_folder_1d(parameter_folder, side):
                                 'spasticity_index_sol': spas_idx_sol_h,
                                 'spasticity_std_sol': spas_std_sol_h,
                                 'spasticity_index_gas': spas_idx_gas_h,
-                                'spasticity_std_gas': spas_std_gas_h}
+                                'spasticity_std_gas': spas_std_gas_h,
+                                'mstep_length': h_mstep_length,
+                                'sstep_length': h_sstep_length,
+                                'speed': h_gspeed,
+                                'mstance_period': h_mstance_period,
+                                'sstance_period': h_sstance_period}
     
     experiment_title = get_experiment_title(parameter_folder)
     healthy_value = 100
 
     # export ankle plot
-    ylabel = ""
-    for s in range(len(var_name.split('_'))-1):
-        ylabel = ylabel + " " + var_name.split('_')[s]
-    ylabel = ylabel + " (" + var_name.split('_')[-1] + ")"
     title = ""
     inv = False
+    es = 'es'
     if experiment_title.split(" ")[0] == "biomechanical":
         inv = True
-        for n in range(len(experiment_title.split(" ")[2:])):
-            title = title + " " + experiment_title.split(" ")[2+n]
+        for n in range(len(experiment_title.split(" ")[1:])):
+            title = title + " " + experiment_title.split(" ")[1+n]
+        if "force" in experiment_title.split(" "):
+            es = "no"
     else:
         s = 1
         if "weak" in experiment_title.split(" "):
             inv = True
+            es = "no"
             for n in range(len(experiment_title.split(" "))-1):
                 if experiment_title.split(" ")[s+n] != "weak":
                     title = title + " " + experiment_title.split(" ")[s+n]
@@ -232,18 +252,22 @@ def assess_parameter_folder_1d(parameter_folder, side):
             for n in range(len(experiment_title.split(" "))-1):
                 title = title + " " + experiment_title.split(" ")[s+n]
 
-    psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, ylabel, title,
-                     report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv)
+    psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, title,
+                     report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
+
+    var_name = 'knee_angle_' + side
+    psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, title,
+                     report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
 
     # export metrics plots
     for metric in experiments_dict:
-        if metric.split("_")[0] in ['score', 'total']:
+        if metric.split("_")[0] in ['score', 'total', 'speed']:
             title = ""
             inv = False
             if experiment_title.split(" ")[0] == "biomechanical":
                 inv = True
-                for n in range(len(experiment_title.split(" ")[2:])):
-                    title = title + " " + experiment_title.split(" ")[2 + n]
+                for n in range(len(experiment_title.split(" ")[1:])):
+                    title = title + " " + experiment_title.split(" ")[1 + n]
             else:
                 s = 1
                 if "weak" in experiment_title.split(" "):
@@ -257,43 +281,53 @@ def assess_parameter_folder_1d(parameter_folder, side):
             psm.plot_column(experiments_dict[metric], experiment_values_float_success, metric, title,
                                 report_folder, healthy_value, experiments_dict_healthy[metric], inv=inv)
 
-        elif metric.split("_")[0] == "spasticity" and metric.split("_")[-1] == 'sol':
+        elif metric.split("_")[0] == "mstance":
             title = ""
             inv = False
             if experiment_title.split(" ")[0] == "biomechanical":
                 inv = True
-                for n in range(len(experiment_title.split(" ")[2:])):
-                    title = title + " " + experiment_title.split(" ")[2+n]
+                for n in range(len(experiment_title.split(" ")[1:])):
+                    title = title + " " + experiment_title.split(" ")[1 + n]
             else:
                 s = 1
                 if "weak" in experiment_title.split(" "):
                     inv = True
-                    for n in range(len(experiment_title.split(" "))-1):
-                        if experiment_title.split(" ")[s+n] != "weak":
-                            title = title + " " + experiment_title.split(" ")[s+n]
+                    for n in range(len(experiment_title.split(" ")) - 1):
+                        if experiment_title.split(" ")[s + n] != "weak":
+                            title = title + " " + experiment_title.split(" ")[s + n]
                 else:
-                    for n in range(len(experiment_title.split(" "))-1):
-                        title = title + " " + experiment_title.split(" ")[s+n]
-            metric_1 = 'spasticity_index_sol'
-            std_1 = "spasticity_std_sol"
-            metric_2 = 'spasticity_index_gas'
-            std_2 = "spasticity_std_gas"
-            psm.plot_column_std_two_muscles(experiments_dict[metric_1], experiments_dict[std_1],
-                                            experiments_dict[metric_2], experiments_dict[std_2],
-                                            experiment_values_float_success, 'spasticity_indexes', title,
-                                            report_folder, healthy_value, experiments_dict_healthy[metric_1],
-                                            experiments_dict_healthy[metric_2], experiments_dict_healthy[std_1],
-                                            experiments_dict_healthy[std_2], side, inv=inv)
+                    for n in range(len(experiment_title.split(" ")) - 1):
+                        title = title + " " + experiment_title.split(" ")[s + n]
+            psm.plot_columns_std(experiments_dict[metric], experiments_dict['sstance_period'],
+                                 experiment_values_float_success, metric, title, report_folder, healthy_value,
+                                 experiments_dict_healthy[metric], experiments_dict_healthy['sstance_period'],
+                                 column_values2=experiments_dict['mstep_length'],
+                                 std_values2=experiments_dict['sstep_length'],
+                                 healthy_metric2=experiments_dict_healthy['mstep_length'],
+                                 std_healthy2=experiments_dict_healthy['sstep_length'], inv=inv)
+        elif "biomechanical" not in experiment_title.split(" ") and "weak" not in experiment_title.split(" ") \
+                and metric.split("_")[0] == "spasticity" and metric.split("_")[-1] == 'sol':
+            title = ""
+            inv = False
+            for n in range(len(experiment_title.split(" "))-1):
+                title = title + " " + experiment_title.split(" ")[s+n]
+            psm.plot_columns_std(experiments_dict[metric], experiments_dict["spasticity_std_sol"],
+                                 experiment_values_float_success, 'spasticity_indexes', title, report_folder,
+                                 healthy_value, experiments_dict_healthy[metric],
+                                 experiments_dict_healthy["spasticity_std_sol"],
+                                 column_values2=experiments_dict['spasticity_index_gas'],
+                                 std_values2=experiments_dict["spasticity_std_gas"],
+                                 healthy_metric2=experiments_dict_healthy['spasticity_index_gas'],
+                                 std_healthy2=experiments_dict_healthy['spasticity_std_gas'], inv=inv)
 
 
 def assess_parameter_folder_2d(parameter_folder, side):
     '''Assesses the necessary metrics of a 2d experiment parameter folder
     and analyzes performance in function of parameter values. It then exports
     results in a report folder.
-
     Parameters
     ----------
-    experiment_folder: (string) experiment folder path.
+    parameter_folder: (string) experiment folder path.
     side: (string) 'l' or 'r' for left or right leg
 
     Returns
@@ -328,12 +362,15 @@ def assess_parameter_folder_2d(parameter_folder, side):
     
     # ankle angle
     var_name = 'ankle_angle_' + side
-
-    ME_gc = []
     ME_st = []
-    ME_sw = []
+    min_es = []
 
-    # spasticity index
+    # gait features
+    stance_period = []
+    step_length = []
+    speed = []
+
+    # spasticity indexes
     spasticity_idx_sol = []
     spasticity_idx_gas = []
 
@@ -345,31 +382,37 @@ def assess_parameter_folder_2d(parameter_folder, side):
         # scores
         experiment_scores.append(float(experiment_sto.rstrip('.par.sto').split('_')[-1]))
 
-        # ME
+        # ankle ME
         try:
-            me_gc, me_std_gc = extract_sto.me(experiment_sto, healthy_sto, var_name, side)
             me_st, me_std_st, me_sw, me_std_sw = extract_sto.me_phases(experiment_sto, healthy_sto, var_name, side)
+            mmin_es, min_std_es = extract_sto.min_ankle_es(experiment_sto, var_name, side)
         except:
-            me_gc, me_std_gc = np.nan, np.nan
-            me_st, me_std_st = np.nan, np.nan
-            me_sw, me_std_sw = np.nan, np.nan
-
-        ME_gc.append(me_gc)
+            me_st, me_std_st, me_sw, me_std_sw = np.nan, np.nan, np.nan, np.nan
+            mmin_es, min_std_es = np.nan, np.nan
         ME_st.append(me_st)
-        ME_sw.append(me_sw)
+        min_es.append(mmin_es)
+
+        # gait features
+        try:
+            mstep_length, sstep_length, gspeed = extract_sto.gait_features(experiment_sto)
+            mstance_period, sstance_period = extract_sto.stance_period(experiment_sto, 'l')
+        except:
+            mstep_length, sstep_length, gspeed = np.nan, np.nan, np.nan
+            mstance_period, sstance_period = np.nan, np.nan
+
+        step_length.append(mstep_length)
+        stance_period.append(mstance_period)
+        speed.append(gspeed)
 
         # spasticity indexes
         try:
             spas_idx_sol, spas_std_sol = spasticity_index.all_cycles_spasticity_index(experiment_sto, "soleus",
                                                                                       side, plot=False)
-        except:
-            spas_idx_sol, spas_std_sol = np.nan, np.nan
-        try:
             spas_idx_gas, spas_std_gas = spasticity_index.all_cycles_spasticity_index(experiment_sto, "gastroc",
                                                                                       side, plot=False)
         except:
+            spas_idx_sol, spas_std_sol = np.nan, np.nan
             spas_idx_gas, spas_std_gas = np.nan, np.nan
-
         spasticity_idx_sol.append(spas_idx_sol)
         spasticity_idx_gas.append(spas_idx_gas)
         
@@ -387,9 +430,11 @@ def assess_parameter_folder_2d(parameter_folder, side):
         
     experiments_dict = {'score': experiment_scores_success,
                         'total_time': experiment_total_time,
-                        'ME_gc': ME_gc,
                         'ME_st': ME_st,
-                        'ME_sw': ME_sw,
+                        'min_es': min_es,
+                        'stance_period': stance_period,
+                        'step_length': step_length,
+                        'speed': speed,
                         'spasticity_index_sol': spasticity_idx_sol,
                         'spasticity_index_gas': spasticity_idx_gas}
 
@@ -401,9 +446,9 @@ def assess_parameter_folder_2d(parameter_folder, side):
     score_healthy = float(healthy_sto.rstrip('.par.sto').split('_')[-1])
     total_time_healthy = psm.get_sto_total_time(healthy_sto)
 
-    ME_gc_h = 0
-    ME_st_h = 0
-    ME_sw_h = 0
+    min_es_h, min_std_es = extract_sto.min_ankle_es(healthy_sto, var_name, side)
+    step_length_h, sstep_length, speed_h = extract_sto.gait_features(healthy_sto)
+    stance_period_h, sstance_period = extract_sto.stance_period(healthy_sto, 'l')
 
     spas_idx_sol_h, spas_std_sol_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "soleus",
                                                                                   side, plot=False)
@@ -411,9 +456,11 @@ def assess_parameter_folder_2d(parameter_folder, side):
                                                                                   side, plot=False)
     experiments_dict_healthy = {'score': score_healthy,
                                 'total_time': total_time_healthy,
-                                'ME_gc': ME_gc_h,
-                                'ME_st': ME_st_h,
-                                'ME_sw': ME_sw_h,
+                                'ME_st': 0,
+                                'min_es': min_es_h,
+                                'stance_period': stance_period_h,
+                                'step_length': step_length_h,
+                                'speed': speed_h,
                                 'spasticity_index_sol': spas_idx_sol_h,
                                 'spasticity_index_gas': spas_idx_gas_h}
     
@@ -435,28 +482,16 @@ def assess_parameter_folder_2d(parameter_folder, side):
             df2 = df2[::-1]
         
         map = "RdBu"
-        if metric in ["ME_gc", "ME_st", "ME_sw"]:
-            if folder_name == "stance_KF_stance_KL":
-                ax = sns.heatmap(df2, cmap=map, vmin=-4, vmax=8, center=experiments_dict_healthy[metric])
-                ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
-            elif folder_name == "stance_TA_KS_swing_TA_KS":
-                ax = sns.heatmap(df2, cmap=map, vmin=-8, vmax=4, center=experiments_dict_healthy[metric])
-                ax.set(xlabel='swing TA KS [%]', ylabel='stance TA KS [%]')
-            else:
-                ax = sns.heatmap(df2, cmap=map, vmin=-8, vmax=4, center=experiments_dict_healthy[metric])
-                ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
-                       ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
+        if folder_name == "stance_KF_stance_KL":
+            ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
+            ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
+        elif folder_name == "stance_TA_KS_swing_TA_KS":
+            ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
+            ax.set(xlabel='swing TA KS [%]', ylabel='stance TA KS [%]')
         else:
-            if folder_name == "stance_KF_stance_KL":
-                ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
-                ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
-            elif folder_name == "stance_TA_KS_swing_TA_KS":
-                ax = sns.heatmap(df2, cmap=map+"_r", center=experiments_dict_healthy[metric])
-                ax.set(xlabel='swing TA KS [%]', ylabel='stance TA KS [%]')
-            else:
-                ax = sns.heatmap(df2, cmap=map+"_r", center=experiments_dict_healthy[metric])
-                ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
-                       ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
+            ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
+            ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
+                   ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
 
         if folder_name == 'stance_KS_swing_KS':
             par = 'increased stance and swing KS'
@@ -470,14 +505,15 @@ def assess_parameter_folder_2d(parameter_folder, side):
             title = 'mean SOL spasticity index ('+side+') \n for '+par
         elif metric == 'spasticity_index_gas':
             title = 'mean GAS spasticity index ('+side+') \n for '+par
-        elif metric == 'ME_gc':
-            title = 'mean ME ('+side+') over the gait cycle \n for '+par
         elif metric == 'ME_st':
-            title = 'mean ME ('+side+') over the stance phase \n for '+par
-        elif metric == 'ME_sw':
-            title = 'mean ME ('+side+') over the swing phase \n for '+par
+            title = 'mean ME over the ST phase \n for '+par
+        elif metric == 'min_es':
+            title = 'min ankle angle during the ES phase \n for '+par
         else:
-            title = metric
+            title = ''
+            for m in metric.split():
+                title += m + ' '
+            title = 'mean ' + metric + '\n for ' + par
         plt.title(title)
         plt.savefig(os.path.join(report_folder, metric+'.png'))
         plt.close()
