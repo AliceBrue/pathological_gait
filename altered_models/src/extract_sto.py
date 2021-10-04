@@ -404,7 +404,7 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
                 av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var2)), cycle_var2)
                 sw_me.append(np.mean((av_swing_var[t, :] - h_stance_var[:st_h_stance_start])))
         
-            return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi, np.mean(sw_me)*180/np.pi, np.std(sw_me)*180/np.pi
+        return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi, np.mean(sw_me)*180/np.pi, np.std(sw_me)*180/np.pi
     
     else:
         return None, None, None, None
