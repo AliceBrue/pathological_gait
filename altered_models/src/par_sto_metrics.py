@@ -289,18 +289,18 @@ def plot_columns_std(column_values1, std_values1, parameter_values, column_name,
     if column_name.split("_")[0] == "ME":
         title = 'Ankle comparison'
         if column_values2 is not None:
-            y_label1 = "min angle ES " + "(" + column_name.split("_")[1] + ") [°]"
-            y_label2 = "ME ST " + "(" + column_name.split("_")[1] + ") [°]"
+            y_label1 = "min angle ES " + "(" + column_name.split("_")[-1] + ") [°]"
+            y_label2 = "mean error (ME) ST " + "(" + column_name.split("_")[-1] + ") [°]"
         else:
-            y_label1 = "ME ST " + "(" + column_name.split("_")[1] + ") [°]"
+            y_label1 = "mean error (ME) ST " + "(" + column_name.split("_")[-1] + ") [°]"
     elif column_name.split("_")[0] == "mstance":
         title = 'Gait features'
         y_label1 = "stance period (T) [s]"
         y_label2 = "step length (L) [m]"
     elif column_name.split("_")[0] == "spasticity":
         title = 'Spasticity indexes'
-        y_label1 = "SOL spasticity index (" + column_name.split("_")[1] + ")"
-        y_label2 = "GAS spasticity index (" + column_name.split("_")[1] + ")"
+        y_label1 = "SOL spasticity index (" + column_name.split("_")[-1] + ")"
+        y_label2 = "GAS spasticity index (" + column_name.split("_")[-1] + ")"
     ax.set_ylabel(y_label1, color=color1)
     if column_values2 is not None:
         ax2.set_ylabel(y_label2, color=color2)

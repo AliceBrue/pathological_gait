@@ -312,7 +312,7 @@ def assess_parameter_folder_1d(parameter_folder, side):
             for n in range(len(experiment_title.split(" "))-1):
                 title = title + " " + experiment_title.split(" ")[s+n]
             psm.plot_columns_std(experiments_dict[metric], experiments_dict["spasticity_std_sol"],
-                                 experiment_values_float_success, 'spasticity_indexes', title, report_folder,
+                                 experiment_values_float_success, 'spasticity_indexes_l', title, report_folder,
                                  healthy_value, experiments_dict_healthy[metric],
                                  experiments_dict_healthy["spasticity_std_sol"],
                                  column_values2=experiments_dict['spasticity_index_gas'],
@@ -395,7 +395,7 @@ def assess_parameter_folder_2d(parameter_folder, side):
         # gait features
         try:
             mstep_length, sstep_length, gspeed = extract_sto.gait_features(experiment_sto)
-            mstance_period, sstance_period = extract_sto.stance_period(experiment_sto, 'l')
+            mstance_period, sstance_period = extract_sto.stance_period(experiment_sto, side)
         except:
             mstep_length, sstep_length, gspeed = np.nan, np.nan, np.nan
             mstance_period, sstance_period = np.nan, np.nan
@@ -448,7 +448,7 @@ def assess_parameter_folder_2d(parameter_folder, side):
 
     min_es_h, min_std_es = extract_sto.min_ankle_es(healthy_sto, var_name, side)
     step_length_h, sstep_length, speed_h = extract_sto.gait_features(healthy_sto)
-    stance_period_h, sstance_period = extract_sto.stance_period(healthy_sto, 'l')
+    stance_period_h, sstance_period = extract_sto.stance_period(healthy_sto, side)
 
     spas_idx_sol_h, spas_std_sol_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "soleus",
                                                                                   side, plot=False)
@@ -482,14 +482,20 @@ def assess_parameter_folder_2d(parameter_folder, side):
             df2 = df2[::-1]
         
         map = "RdBu"
+        if metric == 'ME_st':
+            lab = 'ME ST [°]'
+        elif metric == 'min_es':
+            lab = 'min ES [°]'
+        elif metric == 'step_length':
+            lab = 'step length [m]'
+        else:
+            lab = metric
+        ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric], cbar_kws={'label': lab})
         if folder_name == "stance_KF_stance_KL":
-            ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
             ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
         elif folder_name == "stance_TA_KS_swing_TA_KS":
-            ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
             ax.set(xlabel='swing TA KS [%]', ylabel='stance TA KS [%]')
         else:
-            ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric])
             ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
                    ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
 
@@ -502,13 +508,15 @@ def assess_parameter_folder_2d(parameter_folder, side):
         elif folder_name == 'stance_KF_stance_KL':
             par = 'decreased stance KF and KL'
         if metric == 'spasticity_index_sol':
-            title = 'mean SOL spasticity index ('+side+') \n for '+par
+            title = 'Mean SOL spasticity index ('+side+') \n for '+par
         elif metric == 'spasticity_index_gas':
-            title = 'mean GAS spasticity index ('+side+') \n for '+par
+            title = 'Mean GAS spasticity index ('+side+') \n for '+par
         elif metric == 'ME_st':
-            title = 'mean ME over the ST phase \n for '+par
+            title = 'Mean ankle ME over the ST phase \n for '+par
         elif metric == 'min_es':
-            title = 'min ankle angle during the ES phase \n for '+par
+            title = 'Mean ankle angle min during the ES phase \n for '+par
+        elif metric == 'step_length':
+            title = 'Mean step length \n for '+par
         else:
             title = ''
             for m in metric.split():

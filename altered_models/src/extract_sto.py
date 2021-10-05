@@ -156,14 +156,11 @@ def mean_gait_phases(var_names, var_tab, var_name, side):
         # average of the variable of interest during stance and swing phases over gait cycles
         av_stance_var = av_cycle_var0[0:av_stance_end]
         av_swing_var = av_cycle_var0[av_stance_end:av_gait_cycle]
+
+        return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end
     
     else:
-        av_stance_var = None
-        av_swing_var = None
-        av_gait_cycle = None
-        av_stance_end = None
-
-    return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end
+        return None, None, None, None
 
 
 def me_mean_gait_phases(var_names, var_tab, var_name, side):
@@ -219,15 +216,11 @@ def me_mean_gait_phases(var_names, var_tab, var_name, side):
         # average of the variable of interest during stance and swing phases over gait cycles
         av_stance_var = av_cycle_var0[0:av_stance_end-av_stance_start]
         av_swing_var = av_cycle_var0[av_stance_end-av_stance_start:av_gait_cycle-av_stance_start]
+
+        return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end, av_stance_start
     
     else:
-        av_stance_var = None
-        av_swing_var = None
-        av_gait_cycle = None
-        av_stance_end = None
-        av_stance_start = None
-
-    return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end, av_stance_start
+        return None, None, None, None, None
 
 
 def get_mean_gc(sto_file, var_list, side, sto_file2=None):
@@ -261,8 +254,6 @@ def get_mean_gc(sto_file, var_list, side, sto_file2=None):
         if sto_file2 is not None:
             av_stance_var2, av_swing_var2, av_gait_cycle2, av_stance_end2 = mean_gait_phases(var_names2, var_tab2,
                                                                                                  var_list[var], side)
-            av_var2 = np.concatenate((av_stance_var2, av_swing_var2, av_stance_var2))
-            
         c += 1
 
     if av_stance_var is not None:
@@ -335,6 +326,7 @@ def me(sto_file, sto_file_healthy, var_name, side):
             cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
             av_cycle_var[t, :] = np.interp(np.arange(len(h_gait_cycle)), np.arange(len(cycle_var)), cycle_var)
             me.append(np.mean((av_cycle_var[t, :]-h_gait_cycle)))
+
         return np.mean(me)*180/np.pi, np.std(me)*180/np.pi
     
     else:
@@ -383,29 +375,29 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
         av_stance_var = np.zeros((len(stance_starts) - 1, st_h_stance_end - st_h_stance_start))
         av_swing_var = np.zeros((len(stance_starts) - 1, st_h_stance_start))
 
-    # interpolation of each gait cycle on the h gait cycle duration
-    for t in range(len(stance_starts) - 1):
-        if stance_starts[t] < stance_ends[t]:
-            cycle_var = var[stance_starts[t]:stance_ends[t]]
-            av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
-                                  cycle_var)
-            st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))
-            cycle_var = var[lstance_starts[t]:stance_starts[t]]
-            av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var)), cycle_var)
-            sw_me.append(np.mean((av_swing_var[t, :] - h_stance_var[:st_h_stance_start])))
-
-        else:
-            if t < len(stance_ends) - 1:
-                cycle_var = var[stance_starts[t]:stance_ends[t + 1]]
+        # interpolation of each gait cycle on the h gait cycle duration
+        for t in range(len(stance_starts) - 1):
+            if stance_starts[t] < stance_ends[t]:
+                cycle_var = var[stance_starts[t]:stance_ends[t]]
                 av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
                                       cycle_var)
                 st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))
-                cycle_var2 = var[lstance_starts[t]:stance_starts[t]]
-                av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var2)), cycle_var2)
+                cycle_var = var[lstance_starts[t]:stance_starts[t]]
+                av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var)), cycle_var)
                 sw_me.append(np.mean((av_swing_var[t, :] - h_stance_var[:st_h_stance_start])))
-        
-            return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi, np.mean(sw_me)*180/np.pi, np.std(sw_me)*180/np.pi
-    
+
+            else:
+                if t < len(stance_ends) - 1:
+                    cycle_var = var[stance_starts[t]:stance_ends[t + 1]]
+                    av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
+                                          cycle_var)
+                    st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))
+                    cycle_var2 = var[lstance_starts[t]:stance_starts[t]]
+                    av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var2)), cycle_var2)
+                    sw_me.append(np.mean((av_swing_var[t, :] - h_stance_var[:st_h_stance_start])))
+
+        return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi, np.mean(sw_me)*180/np.pi, np.std(sw_me)*180/np.pi
+
     else:
         return None, None, None, None
 
