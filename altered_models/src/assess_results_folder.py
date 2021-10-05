@@ -512,7 +512,7 @@ def assess_parameter_folder_2d(parameter_folder, side):
         elif metric == 'spasticity_index_gas':
             title = 'Mean GAS spasticity index ('+side+') \n for '+par
         elif metric == 'ME_st':
-            title = 'Mean ankle ME over the ST phase \n for '+par
+            title = 'Mean ankle angle ME over the ST phase \n for '+par
         elif metric == 'min_es':
             title = 'Mean ankle angle min during the ES phase \n for '+par
         elif metric == 'step_length':
