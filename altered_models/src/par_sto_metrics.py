@@ -423,14 +423,14 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
                    label="ES")
     if "ankle" in var_name:
         xlabel = title
-        ylabel = 'ankle angle'
+        ylabel = 'ankle angle (' + side + ')'
         title = "Ankle angle"
         ax.axhline(y=24, xmin=time[lst] / time[h_av_gait_cycle], xmax=(time[h_av_stance_end]) / time[h_av_gait_cycle],
                    color="tab:cyan", linewidth=4, label="ST")
         ax.set_ylim((-45, 25))
     if "knee" in var_name:
         xlabel = title
-        ylabel = 'knee angle'
+        ylabel = 'knee angle (' + side + ')'
         title = "Knee angle"
         ax.axhline(y=9, xmin=time[lst] / time[h_av_gait_cycle], xmax=(time[h_av_stance_end]) / time[h_av_gait_cycle],
                    color="tab:cyan", linewidth=4, label="ST")
