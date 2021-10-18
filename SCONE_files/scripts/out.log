@@ -1,1 +1,21 @@
-Storage: read data file =C:\Users\Acer\Documents\BioRob\Master thesis\git_paper\SCONE files\states\optimisation.sto (nr=1501 nc=512)
+Storage: read data file =C:\Users\Acer\Documents\BioRob\Master thesis\paper_git\SCONE_files\states\optimisation.sto (nr=1501 nc=512)
+Updating Model file from 30000 to latest format...
+Loaded model f0914m from file ../model/gait0914.osim
+ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+Storage: read data file =C:\Users\Acer\Documents\BioRob\Master thesis\paper_git\SCONE_files\states\optimisation.sto (nr=1501 nc=512)
+No external loads will be applied (external loads file not specified).
+
+Loading states from file C:\Users\Acer\Documents\BioRob\Master thesis\paper_git\SCONE_files\states\optimisation.sto.
+Storage: read data file =C:\Users\Acer\Documents\BioRob\Master thesis\paper_git\SCONE_files\states\optimisation.sto (nr=1501 nc=512)
+Number of columns does not match in formStateStorage. Found 511 Expected  46.
+Found 1501 state vectors with time stamps ranging from 0 to 15.
+Executing the analyses from 0 to 15...
+Printing results of investigation muscle_analysis to C:\Users\Acer\Documents\BioRob\Master thesis\paper_git\SCONE_files\states\muscle_analysis.
+Storage: read data file =../states/muscle_analysis/muscle_analysis_MuscleAnalysis_Moment_ankle_angle_l.sto (nr=1501 nc=15)
+Storage: read data file =../states/muscle_analysis/muscle_analysis_MuscleAnalysis_Moment_knee_angle_l.sto (nr=1501 nc=15)
+Storage: read data file =../states/muscle_analysis/muscle_analysis_MuscleAnalysis_Moment_hip_flexion_l.sto (nr=1501 nc=15)
+Updating Model file from 30000 to latest format...
+Loaded model f0914m from file ../model/gait0914.osim
+ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.

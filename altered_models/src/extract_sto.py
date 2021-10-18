@@ -2,6 +2,9 @@
 This script contains functions to extract variables from SCONE sto files and average them over gait phases.
 """
 import numpy as np
+import opensim
+import os
+import pandas as pd
 
 
 def extract_sto(sto_file):
@@ -21,8 +24,10 @@ def extract_sto(sto_file):
     file.readline()
     nrows = int(file.readline().split('=')[1])
     ncol = int(file.readline().split('=')[1])
-    file.readline()
-    file.readline()
+
+    line = file.readline()
+    while len(line.split()) == 0 or line.split()[0] != 'endheader':
+        line = file.readline()
 
     var_names = np.asarray(file.readline().split('\t'))
 
@@ -109,7 +114,7 @@ def me_stance_phase_indexes(var_names, var_tab):
     return lstance_starts, lstance_ends, rstance_starts, rstance_ends
 
 
-def mean_gait_phases(var_names, var_tab, var_name, side):
+def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
     """Interpolates and averages a variable during stance and swing phases over gait cycles
     Parameters
     ---------
@@ -117,6 +122,7 @@ def mean_gait_phases(var_names, var_tab, var_name, side):
     var_tab: (array) previous variable valuess during simulation
     var_name: (string) name of the variable to average
     side: (string) 'r' or 'l' for right or left variable
+    moment_norm: (array) normalised joint moment to average if not None
 
     Returns
     ----------
@@ -127,8 +133,11 @@ def mean_gait_phases(var_names, var_tab, var_name, side):
     """
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
 
-    var_index = np.where(var_names == var_name)[0][0]
-    var = var_tab[:, var_index]
+    if moment_norm is None:
+        var_index = np.where(var_names == var_name)[0][0]
+        var = var_tab[:, var_index]
+    else:
+        var = moment_norm
 
     if side == 'l':
         stance_starts = lstance_starts
@@ -168,7 +177,7 @@ def me_mean_gait_phases(var_names, var_tab, var_name, side):
         Parameters
     ---------
     var_names: (list) list of variable names
-    var_tab: (array) previous variable valuess during simulation
+    var_tab: (array) previous variable values during simulation
     var_name: (string) name of the variable to average
     side: (string) 'r' or 'l' for right or left variable
 
@@ -286,59 +295,12 @@ def get_mean_gc(sto_file, var_list, side, sto_file2=None):
         return mean_gc_var, std_gc_var, mean_stance_var, std_stance_var, mean_swing_var, std_swing_var
 
 
-def me(sto_file, sto_file_healthy, var_name, side):
-    """Computes the mean ME between altered and healthy ankle angle during the gait cycle.
+def me_stance(sto_file, sto_file_healthy, var_name, side):
+    """Computes the mean ME between altered and healthy ankle angle during late stance period
     Parameters
     --------
-    sto_file: (string) path to the sto_file of interest
-    sto_file_healthy: (string) path to the healthy sto_file
-    var_name: (string) name of the varaible of interest
-    side: (string) 'l' or 'r' for left or right variable
-
-    Returns
-    --------
-    mean_me: (float) mean ME
-    std_me: (float) ME std
-    """
-    var_names, var_tab = extract_sto(sto_file_healthy)
-    av_stance_var, av_swing_var, h_gait_cycle, av_stance_end = mean_gait_phases(var_names, var_tab, var_name,
-                                                                                     side)
-    h_gait_cycle = np.concatenate((av_stance_var, av_swing_var))
-    var_names, var_tab = extract_sto(sto_file)
-        
-    lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
-
-    var_index = np.where(var_names == var_name)[0][0]
-    var = var_tab[:, var_index]
-
-    me = []
-
-    if side == 'l':
-        stance_starts = lstance_starts
-    else:
-        stance_starts = rstance_starts
-
-    if len(stance_starts):
-        av_cycle_var = np.zeros((len(stance_starts) - 1, len(h_gait_cycle)))
-
-        # interpolation of each gait cycle on the h gait cycle duration
-        for t in range(len(stance_starts) - 1):
-            cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
-            av_cycle_var[t, :] = np.interp(np.arange(len(h_gait_cycle)), np.arange(len(cycle_var)), cycle_var)
-            me.append(np.mean((av_cycle_var[t, :]-h_gait_cycle)))
-
-        return np.mean(me)*180/np.pi, np.std(me)*180/np.pi
-    
-    else:
-        return None, None
-
-
-def me_phases(sto_file, sto_file_healthy, var_name, side):
-    """Computes the mean ME between altered and healthy ankle angle during late stance and swing phases
-    Parameters
-    --------
-    sto_file: (string) path to the sto_file of interest
-    sto_file_healthy: (string) path to the healthy sto_file
+    sto_file: (string) path to the sto file of interest
+    sto_file_healthy: (string) path to the healthy sto file
     var_name: (string) name of the varaible of interest
     side: (string) 'l' or 'r' for left or right variable
 
@@ -362,7 +324,6 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
     var = var_tab[:, var_index]
 
     st_me = []
-    sw_me = []
 
     if side == 'l':
         stance_starts = st_lstance_starts
@@ -375,28 +336,23 @@ def me_phases(sto_file, sto_file_healthy, var_name, side):
         av_stance_var = np.zeros((len(stance_starts) - 1, st_h_stance_end - st_h_stance_start))
         av_swing_var = np.zeros((len(stance_starts) - 1, st_h_stance_start))
 
-        # interpolation of each gait cycle on the h gait cycle duration
+        ## interpolation of each gait cycle on the h gait cycle duration
         for t in range(len(stance_starts) - 1):
             if stance_starts[t] < stance_ends[t]:
                 cycle_var = var[stance_starts[t]:stance_ends[t]]
-                av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
+                """av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
                                       cycle_var)
-                st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))
-                cycle_var = var[lstance_starts[t]:stance_starts[t]]
-                av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var)), cycle_var)
-                sw_me.append(np.mean((av_swing_var[t, :] - h_stance_var[:st_h_stance_start])))
-
+                st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))"""
+                st_me.append(np.mean(cycle_var) - np.mean(st_h_stance_var))
             else:
                 if t < len(stance_ends) - 1:
                     cycle_var = var[stance_starts[t]:stance_ends[t + 1]]
-                    av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
+                    """av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
                                           cycle_var)
-                    st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))
-                    cycle_var2 = var[lstance_starts[t]:stance_starts[t]]
-                    av_swing_var[t, :] = np.interp(np.arange(st_h_stance_start), np.arange(len(cycle_var2)), cycle_var2)
-                    sw_me.append(np.mean((av_swing_var[t, :] - h_stance_var[:st_h_stance_start])))
+                    st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))"""
+                    st_me.append(np.mean(cycle_var) - np.mean(st_h_stance_var))
 
-        return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi, np.mean(sw_me)*180/np.pi, np.std(sw_me)*180/np.pi
+        return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi
 
     else:
         return None, None, None, None
@@ -406,8 +362,8 @@ def min_ankle_es(sto_file, var_name, side):
     """Computes the mean min angle during ES period.
     Parameters
     --------
-    sto_file: (string) path to the sto_file of interest
-    var_name: (string) name of the varaible of interest
+    sto_file: (string) path to the sto file of interest
+    var_name: (string) name of the variable of interest
     side: (string) 'l' or 'r' for left or right variable
 
     Returns
@@ -452,7 +408,7 @@ def gait_features(sto_file):
     """Computes the mean step length and gait speed.
     Parameters
     --------
-    sto_file: (string) path to the sto_file of interest
+    sto_file: (string) path to the sto file of interest
 
     Returns
     --------
@@ -491,7 +447,7 @@ def stance_period(sto_file, side):
     """Computes the mean stance phase period.
     Parameters
     --------
-    sto_file: (string) path to the sto_file of interest
+    sto_file: (string) path to the sto file of interest
     side: (string) 'l' or 'r' for left or right variable
 
     Returns
@@ -528,3 +484,80 @@ def stance_period(sto_file, side):
 
     else:
         return None, None
+
+
+def perform_muscle_analysis(model_file, state_file, output_dir):
+    """Perform OpenSim MuscleAnalysis on SCONE state file generated
+    through simulation. This might be used to calculate joint moments
+    induced by muscles.
+    Parameters
+    --------
+    model_file: (string) path to osim model file
+    state_file: (string) path to the sto file of interest
+    output_dir: (string) path to sto file directory
+
+    Returns
+    --------
+    muscle anaysis files
+    """
+    model = opensim.Model(model_file)
+
+    # construct static optimization
+    state_storage = opensim.Storage(state_file)
+    muscle_analysis = opensim.MuscleAnalysis()
+    muscle_analysis.setStartTime(state_storage.getFirstTime())
+    muscle_analysis.setEndTime(state_storage.getLastTime())
+    model.addAnalysis(muscle_analysis)
+
+    # analysis
+    analysis = opensim.AnalyzeTool(model)
+    analysis.setName('muscle_analysis')
+    analysis.setModel(model)
+    analysis.setInitialTime(state_storage.getFirstTime())
+    analysis.setFinalTime(state_storage.getLastTime())
+    analysis.setStatesFileName(state_file)
+    # analysis.setLowpassCutoffFrequency(6)
+    analysis.setLoadModelAndInput(True)
+    analysis.setResultsDir(os.path.abspath(output_dir))
+    analysis.run()
+
+
+def modify_model(model_file, sto_dir):
+    """
+    Modify Millard muscles parameters
+    Parameters
+    --------
+    model_file: (string) path to osim model file
+    sto_dir: (string) path to sto file directory
+
+    Returns
+    --------
+    osim_file: (string) path to modified osim model file
+    """
+    modified_muscles = ['soleus_r', 'soleus_l', 'gastroc_r', 'gastroc_l']
+    file = open(model_file, 'r')
+    lines = file.readlines()
+    new_lines = lines
+    muscle_name = ''
+    for l in range(len(lines)):
+        line = lines[l]
+        if len(line.split()) > 0 and line.split()[0] == '<Millard2012EquilibriumMuscle':
+            muscle_name = line.split('"')[-2]
+        if muscle_name in modified_muscles and sto_dir.split()[0].split('\\')[-1].split('_')[0] == 'max' and \
+                len(line.split()) > 0 and len(line.split()[0].split('>')) > 0 and \
+                line.split()[0].split('>')[0] == '<max_isometric_force':
+            new_value = str(float(sto_dir.split()[0].split('\\')[-1].split('_')[3].split('.')[0])/100 *
+                        float(line.split()[0].split('>')[1].split('<')[0]))
+            new_lines[l] = '\t\t\t\t\t<max_isometric_force>' + new_value + '</max_isometric_force>\n'
+        if muscle_name in modified_muscles and sto_dir.split()[0].split('\\')[-1].split('_')[0] == 'opt' and \
+                len(line.split()) > 0 and len(line.split()[0].split('>')) > 0 and\
+                line.split()[0].split('>')[0] == '<optimal_fiber_length':
+            new_value = str(float(sto_dir.split('\\')[-1].split('_')[3].split('.')[0])/100 *
+                            float(line.split()[0].split('>')[1].split('<')[0]))
+            new_lines[l] = '\t\t\t\t\t<optimal_fiber_length>' + new_value + '</optimal_fiber_length>\n'
+
+    # write modified osim model file
+    osim_file = sto_dir + 'modified_gait0914.osim'
+    with open(osim_file, 'w') as file:
+        file.writelines(new_lines)
+    return osim_file

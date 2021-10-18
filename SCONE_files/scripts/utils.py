@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.colors as mcolors
 import seaborn as sns
+import os
+import opensim
 
 sns.set_theme()
 sns.set_context("paper", font_scale=1.5)
@@ -164,9 +166,6 @@ def add_healthy_range_schwartz(ax, var_name):
                                 16.0, 16.1, 16.2, 16.3, 16.4, 16.5,
                                 16.7, 16.9, 17.1, 17.3, 17.4, 17.4,
                                 17.3, 17.2, 17.0 ], -1)
-        std = np.array(norm_max) - np.array(norm_mean)
-        norm_max = np.array(norm_mean) + 2 * std
-        norm_min = np.array(norm_mean) - 2 * std
     if "hip_flexion" in var_name:
         norm_min = [30.4, 30.2, 29.9, 29.3, 28.3, 26.9, 25.1, 23.1,
                     20.9, 18.7, 16.5, 14.3, 12.1, 9.9, 7.6, 5.4, 3.2,
@@ -189,9 +188,6 @@ def add_healthy_range_schwartz(ax, var_name):
                     20.4, 24.0, 27.4, 30.5, 33.2, 35.5, 37.5, 39.1,
                     40.5, 41.4, 42.0, 42.2, 42.1, 41.7, 41.3, 41.0,
                     41.0 ]
-        std = np.array(norm_max) - np.array(norm_mean)
-        norm_max = np.array(norm_mean) + 2 * std
-        norm_min = np.array(norm_mean) - 2 * std
     if "knee_angle" in var_name:
         norm_min = [-0.1, 2.5, 5.3, 8.3, 10.8, 12.3, 13.0, 12.9, 12.4,
                     11.6, 10.6, 9.4, 8.2, 7.0, 5.8, 4.6, 3.5, 2.5,
@@ -213,9 +209,6 @@ def add_healthy_range_schwartz(ax, var_name):
                     52.8, 57.7, 61.4, 63.8, 65.0, 65.0, 63.8, 61.3,
                     57.6, 52.9, 47.3, 41.0, 34.2, 27.2, 20.5, 14.9,
                     11.2, 10.0, 11.0 ]
-        std = np.array(norm_max) - np.array(norm_mean)
-        norm_max = np.array(norm_mean) + 2 * std
-        norm_min = np.array(norm_mean) - 2 * std
     if "ankle_angle" in var_name:
         norm_min = [-7.7, -9.1, -10.3, -9.9, -8.2, -6.1, -4.2, -2.5,
                     -1.0, 0.2, 1.4, 2.3, 3.1, 3.7, 4.3, 4.8, 5.3, 5.7, 6.1, 6.4,
@@ -237,8 +230,6 @@ def add_healthy_range_schwartz(ax, var_name):
                     6.4, 5.9, 5.4, 4.8, 4.5, 4.3, 4.1, 3.1]
         std = np.array(norm_max) - np.array(norm_mean)
         print("Ankle std: ", np.mean(std), "° , during stance: ", np.mean(std[:int(0.6*len(std))]), "°")
-        norm_max = np.array(norm_mean) + 2 * std
-        norm_min = np.array(norm_mean) - 2 * std
     if "grf_norm_y" in var_name:
         norm_min = [0.05, 0.61, 0.76, 0.86, 1.00, 1.15, 1.22, 1.22,
                     1.17, 1.10, 1.03, 0.96, 0.92, 0.89, 0.89, 0.89,
@@ -261,9 +252,75 @@ def add_healthy_range_schwartz(ax, var_name):
                    -0.01, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00,
                    0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00,
                    0.00, 0.00, 0.00]
-        std = np.array(norm_max) - np.array(norm_mean)
-        norm_max = np.array(norm_mean) + 2 * std
-        norm_min = np.array(norm_mean) - 2 * std
+    if 'hip_flexion_moment' in var_name:
+        norm_min = [-0.01, 0.37, 0.23, 0.33, 0.30, 0.28, 0.26, 0.21,
+                    0.15, 0.08, 0.01, -0.02, -0.04, -0.07, -0.09,
+                    -0.13, -0.17, -0.23, -0.27, -0.34, -0.42, -0.51,
+                    -0.62, -0.72, -0.80, -0.85, -0.84, -0.76, -0.61,
+                    -0.50, -0.46, -0.40, -0.33, -0.28, -0.22, -0.17,
+                    -0.13, -0.10, -0.08, -0.07, -0.07, -0.08, -0.07,
+                    -0.05, 0.00, 0.08, 0.15, 0.20, 0.20, 0.13, -0.04]
+        norm_mean = [0.12, 0.73, 0.54, 0.52, 0.50, 0.48, 0.44, 0.39,
+                     0.32, 0.24, 0.17, 0.12, 0.09, 0.06, 0.03, 0.00,
+                     -0.03, -0.08, -0.12, -0.18, -0.25, -0.33, -0.42,
+                     -0.50, -0.58, -0.62, -0.62, -0.55, -0.43, -0.34,
+                     -0.32, -0.27, -0.21, -0.17, -0.14, -0.10, -0.08,
+                     -0.05, -0.03, -0.03, -0.02, -0.02, 0.00, 0.04,
+                     0.11, 0.20, 0.28, 0.33, 0.34, 0.28, 0.12]
+        norm_max = [0.26, 1.08, 0.84, 0.72, 0.70, 0.67, 0.63, 0.57,
+                    0.48, 0.40, 0.32, 0.27, 0.23, 0.19, 0.16, 0.13,
+                    0.10, 0.08, 0.04, -0.02, -0.08, -0.14, -0.21,
+                    -0.29, -0.36, -0.40, -0.40, -0.35, -0.25, -0.19,
+                    -0.18, -0.14, -0.10, -0.07, -0.05, -0.03, -0.02,
+                    0.00, 0.01, 0.02, 0.03, 0.04, 0.08, 0.14, 0.22,
+                    0.32, 0.41, 0.47, 0.49, 0.43, 0.28]
+    if 'knee_flexion_moment' in var_name:
+        norm_min = [-0.21, -0.47, -0.25, -0.07, 0.03, 0.10, 0.13,
+                    0.13, 0.09, 0.04, -0.02, -0.07, -0.13, -0.17,
+                    -0.20, -0.24, -0.27, -0.30, -0.34, -0.36, -0.38,
+                    -0.39, -0.37, -0.32, -0.25, -0.17, -0.08, 0.00,
+                    0.04, 0.04, 0.04, 0.02, 0.01, 0.02, 0.02, 0.01,
+                    0.00, -0.01, -0.01, -0.02, -0.03, -0.04, -0.07,
+                    -0.10, -0.15, -0.21, -0.28, -0.34, -0.36, -0.32,
+                    -0.22]
+        norm_mean = [-0.13, -0.29, -0.07, 0.08, 0.23, 0.33, 0.37,
+                     0.35, 0.30, 0.24, 0.17, 0.10, 0.03, -0.02, -0.06,
+                     -0.10, -0.14, -0.17, -0.20, -0.23, -0.24, -0.24,
+                     -0.22, -0.17, -0.10, -0.02, 0.06, 0.12, 0.14,
+                     0.12, 0.10, 0.08, 0.08, 0.09, 0.08, 0.07, 0.05,
+                     0.03, 0.02, 0.01, 0.00, -0.02, -0.03, -0.06,
+                     -0.10, -0.15, -0.20, -0.24, -0.26, -0.22, -0.13]
+        norm_max = [-0.05, -0.12, 0.11, 0.22, 0.42, 0.55, 0.60, 0.58,
+                    0.52, 0.43, 0.35, 0.27, 0.19, 0.13, 0.08, 0.03,
+                    -0.01, -0.04, -0.07, -0.09, -0.10, -0.10, -0.07,
+                    -0.02, 0.05, 0.12, 0.20, 0.24, 0.23, 0.19, 0.17,
+                    0.15, 0.14, 0.15, 0.14, 0.12, 0.10, 0.07, 0.05,
+                    0.03, 0.02, 0.01, 0.00, -0.02, -0.04, -0.08,
+                    -0.12, -0.15, -0.16, -0.13, -0.04]
+    if 'ankle_angle_moment' in var_name:
+        norm_min = [-0.01, -0.14, -0.23, -0.22, -0.19, -0.14, -0.10,
+                    -0.06, -0.02, 0.02, 0.08, 0.14, 0.20, 0.27, 0.34, 0.41, 0.48,
+                    0.55, 0.63, 0.71, 0.79, 0.87, 0.93, 0.98, 0.99, 0.95, 0.83,
+                    0.61, 0.31, 0.05, -0.06, -0.07, -0.06, -0.04, -0.03, -0.02,
+                    -0.01, -0.01, -0.01, -0.01, -0.01, -0.02, -0.02, -0.02, -0.02,
+                    -0.02, -0.02, -0.01, -0.01, 0.00, -0.01]
+        norm_mean = [0.00, -0.08, -0.13, -0.11, -0.06, 0.00, 0.06,
+                     0.12, 0.18, 0.25, 0.31, 0.38, 0.44, 0.50, 0.56,
+                     0.62, 0.69, 0.76, 0.84, 0.92, 1.00, 1.08, 1.16,
+                     1.21, 1.23, 1.19, 1.07, 0.86, 0.56, 0.25, 0.05,
+                     -0.02, -0.03, -0.03, -0.02, -0.01, -0.01, -0.01,
+                     -0.01, -0.01, -0.01, -0.01, -0.01, -0.02, -0.02,
+                     -0.01, -0.01, 0.00, 0.00, 0.00, 0.00]
+        norm_max = [0.01, -0.02, -0.03, 0.00, 0.07, 0.15, 0.23, 0.31,
+                    0.39, 0.47, 0.55, 0.61, 0.67, 0.72, 0.78, 0.84,
+                    0.90, 0.97, 1.04, 1.12, 1.21, 1.30, 1.39, 1.45,
+                    1.47, 1.42, 1.31, 1.11, 0.81, 0.46, 0.17, 0.03,
+                    -0.01, -0.01, -0.01, -0.01, -0.01, -0.01, -0.01,
+                    -0.01, -0.01, -0.01, -0.01, -0.01, -0.01, -0.01,
+                    0.00, 0.00, 0.01, 0.01, 0.01]
+    std = np.array(norm_max) - np.array(norm_mean)
+    norm_max = np.array(norm_mean) + 2 * std
+    norm_min = np.array(norm_mean) - 2 * std
 
     if norm_min is not None and norm_max is not None:
         time_vector = np.linspace(0, 100, len(norm_min))
@@ -338,14 +395,20 @@ def plot_scone_kinematics(state, side, output_file=None):
     None
     """
     assert(side in ['r', 'l'])
+
     # calculate heel strike events
     hs_time = get_heel_strike_events(state, side)
     ts_time = np.array(get_toe_strike_events(state, side))
     hs_t = np.array(hs_time)
     if hs_time[0] < ts_time[0]:
-        sw = np.mean((ts_time[1:] - hs_t[1:])*100/(hs_t[1:] - hs_t[:-1]))
+        sw = np.mean((ts_time[1:] - hs_t[1:]) * 100 / (hs_t[1:] - hs_t[:-1]))
     else:
-        sw = np.mean((ts_time[1:] - hs_t[:-1]) * 100 / (hs_t[1:] - hs_t[:-1]))
+        if len(ts_time[1:]) < len(hs_t[:]):
+            sw = np.mean((ts_time[1:] - hs_t[:-1]) * 100 / (hs_t[1:] - hs_t[:-1]))  # hs_t[:-1]
+        elif len(ts_time[1:]) > len(hs_t[:]):
+            sw = np.mean((ts_time[1:-1] - hs_t[:]) * 100 / (hs_t[1:] - hs_t[:-1]))
+        else:
+            sw = np.mean((ts_time[1:-1] - hs_t[:-1]) * 100 / (hs_t[1:] - hs_t[:-1]))
 
     # get kinematic variables
     kinematics = state[['time',
@@ -417,7 +480,145 @@ def plot_scone_kinematics(state, side, output_file=None):
     plt.subplots_adjust()
     # remove unused plots
     fig.delaxes(ax[5])
-    plt.show()
+    if output_file is not None:
+        fig.savefig(output_file + '.kinematics.png', bbox_inches='tight')
+
+
+def plot_scone_joint_kinematics(state, model_file, muscle_analysis_output_dir, side, output_file=None):
+    """Computes the joint moments obtained from OpenSim's MuscleAnalysis and plot joint kinemtics
+    tool.
+    Parameters
+    ----------
+    state: (tuple labels, time, data)
+    model_file: (string) path to osim model file
+    muscle_analysis_output_dir: (string) path to muscle analysis directory
+    side: (string) 'r' or 'l' for right or left side
+    output_file: (string) path to save the plot
+
+    Returns
+    -------
+    None
+    """
+    assert (side in ['r', 'l'])
+    # calculate heel strike events
+    hs_time = get_heel_strike_events(state, side)
+    ts_time = np.array(get_toe_strike_events(state, side))
+    hs_t = np.array(hs_time)
+    if hs_time[0] < ts_time[0]:
+        sw = np.mean((ts_time[1:min(len(ts_time), len(hs_time))] - hs_t[1:min(len(ts_time), len(hs_time))]) * 100 /
+                     (hs_t[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time))-1]))
+    else:
+        sw = np.mean((ts_time[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time))-1]) * 100 /
+                     (hs_t[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time))-1]))
+
+    # get all files generated by the analysis tool
+    _, _, filenames = next(os.walk(muscle_analysis_output_dir))
+
+    # find moment files of interest
+    ankle_moment_file = ''
+    knee_moment_file = ''
+    hip_moment_file = ''
+    for f in filenames:
+        if '_Moment_' + 'ankle_angle_' + side in f:
+            ankle_moment_file = f
+        if '_Moment_' + 'knee_angle_' + side in f:
+            knee_moment_file = f
+        if '_Moment_' + 'hip_flexion_' + side in f:
+            hip_moment_file = f
+
+    # load moment storage
+    ankle_moment = read_from_storage(os.path.join(muscle_analysis_output_dir,
+                                                  ankle_moment_file))
+    knee_moment = read_from_storage(os.path.join(muscle_analysis_output_dir,
+                                                 knee_moment_file))
+    hip_moment = read_from_storage(os.path.join(muscle_analysis_output_dir,
+                                                hip_moment_file))
+
+    # get total mass for normalisation
+    model = opensim.Model(model_file)
+    s = model.initSystem()
+    mass = model.getTotalMass(s)
+
+    # compute normalized joint moments and place into a DataFrame
+    ankle_moment_norm = ankle_moment.sum(axis=1) / mass
+    knee_moment_norm = knee_moment.sum(axis=1) / mass
+    hip_moment_norm = hip_moment.sum(axis=1) / mass
+    moments = pd.concat([hip_moment_norm, knee_moment_norm, ankle_moment_norm],
+                        axis=1)
+    moments['time'] = moments.index
+    moments.columns = ['hip_flexion_moment_' + side, 'knee_angle_moment_' + side,
+                       'ankle_angle_moment_' + side, 'time']
+
+    # get kinematic variables
+    kinematics = state[['time',
+                        'pelvis_tilt',
+                        'hip_flexion_' + side,
+                        'knee_angle_' + side,
+                        'ankle_angle_' + side]]
+    if side == 'r':
+        leg_name = 'leg1_r'
+    else:
+        leg_name = 'leg0_l'
+    forces = state[['time', leg_name + '.grf_norm_y']]
+
+    # plot kinematics
+    hex_list = ['#00e8ff', '#020291']
+    cmap = get_continuous_cmap(hex_list)
+    color_offset = mcolors.Normalize(vmin=0, vmax=len(hs_time) - 1)
+    fig, ax = plt.subplots(2, 4, figsize=(12, 6))
+    ax = ax.flatten()
+    for i in range(len(hs_time) - 1):
+        normalized = to_gait_cycle(kinematics, hs_time[i], hs_time[i + 1])
+        normalized = normalized.apply(lambda x: np.rad2deg(x))
+        normalized['pelvis_tilt'].plot(ax=ax[0], color=cmap(color_offset(i)), zorder=10)
+        normalized['hip_flexion_' + side].plot(ax=ax[1], color=cmap(color_offset(i)), zorder=10)
+        normalized['knee_angle_' + side].apply(lambda x: -x).plot(ax=ax[2], color=cmap(color_offset(i)), zorder=10)
+        normalized['ankle_angle_' + side].plot(ax=ax[3], color=cmap(color_offset(i)), zorder=10)
+        normalized = to_gait_cycle(moments, hs_time[i], hs_time[i + 1])
+        normalized['hip_flexion_moment_' + side].apply(lambda x: -x).plot(ax=ax[5], color=cmap(color_offset(i)),
+                                                                          zorder=10)
+        normalized['knee_angle_moment_' + side].plot(ax=ax[6], color=cmap(color_offset(i)), zorder=10)
+        normalized['ankle_angle_moment_' + side].apply(lambda x: -x).plot(ax=ax[7], color=cmap(color_offset(i)),
+                                                                          zorder=10)
+        normalized = to_gait_cycle(forces, hs_time[i], hs_time[i + 1])
+        normalized[leg_name + '.grf_norm_y'].plot(ax=ax[4], color=cmap(color_offset(i)), zorder=10)
+
+    # plot healthy ranges
+    add_healthy_range_schwartz(ax[0], 'pelvis_tilt')
+    add_healthy_range_schwartz(ax[1], 'hip_flexion')
+    add_healthy_range_schwartz(ax[2], 'knee_angle')
+    add_healthy_range_schwartz(ax[3], 'ankle_angle')
+    add_healthy_range_schwartz(ax[4], 'grf_norm_y')
+    add_healthy_range_schwartz(ax[5], 'hip_flexion_moment')
+    add_healthy_range_schwartz(ax[6], 'knee_flexion_moment')
+    add_healthy_range_schwartz(ax[7], 'ankle_angle_moment')
+
+    # add labels
+    for p in range(8):
+        ax[p].axvspan(sw, 100, alpha=0.5, color='blanchedalmond', zorder=0)
+        ax[p].set_xlabel('gait cycle [%]')
+        ax[p].set_xlim([0, 100])
+        ax[p].set_xticks(range(0, 120, 20))
+    ax[0].set_ylabel('pelvis tilt (' + side + ') [°]')
+    ax[0].set_title('Pelvis tilt', fontweight="bold")
+    ax[1].set_ylabel('hip flexion (' + side + ') [°]')
+    ax[1].set_title('Hip angle', fontweight="bold")
+    ax[2].set_ylabel('knee flexion (' + side + ') [°]')
+    ax[2].set_title('Knee angle', fontweight="bold")
+    ax[3].set_ylabel('ankle flexion (' + side + ') [°]')
+    ax[3].set_title('Ankle angle', fontweight="bold")
+    ax[4].set_ylabel('GRF (' + side + ') [BW]')
+    ax[4].set_title('Ground reaction force', fontweight="bold")
+    ax[5].set_title('Hip moment', fontweight="bold")
+    ax[5].set_ylabel('hip moment (' + side + ') [Nm/kg]')
+    ax[6].set_title('Knee moment', fontweight="bold")
+    ax[6].set_ylabel('knee moment (' + side + ') [Nm/kg]')
+    ax[7].set_title('Ankle moment', fontweight="bold")
+    ax[7].set_ylabel('ankle moment (' + side + ') [Nm/kg]')
+
+    fig.tight_layout()
+    plt.subplots_adjust()
+
     if output_file is not None:
         fig.savefig(output_file + '.kinematics.png', bbox_inches='tight')
 
@@ -508,9 +709,11 @@ def plot_scone_muscle_activations(state, muscles, side, col=4, output_file=None)
     ts_time = np.array(get_toe_strike_events(state, side))
     hs_t = np.array(hs_time)
     if hs_time[0] < ts_time[0]:
-        sw = np.mean((ts_time[1:] - hs_t[1:]) * 100 / (hs_t[1:] - hs_t[:-1]))
+        sw = np.mean((ts_time[1:min(len(ts_time), len(hs_time))] - hs_t[1:min(len(ts_time), len(hs_time))]) * 100 /
+                     (hs_t[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time)) - 1]))
     else:
-        sw = np.mean((ts_time[1:] - hs_t[:-1]) * 100 / (hs_t[1:] - hs_t[:-1]))
+        sw = np.mean((ts_time[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time)) - 1]) * 100 /
+                     (hs_t[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time)) - 1]))
 
     # visualize muscle activations
     M = len(muscles)
@@ -553,7 +756,41 @@ def plot_scone_muscle_activations(state, muscles, side, col=4, output_file=None)
         while i >= M:
             fig.delaxes(ax[i])
             i = i - 1
-    plt.show()
     fig.tight_layout()
     if output_file is not None:
         fig.savefig(output_file + '.activations.png', bbox_inches='tight')
+
+
+def perform_muscle_analysis(model_file, state_file, output_dir):
+    """Perform OpenSim MuscleAnalysis on SCONE state file generated
+    through simulation.
+    Parameters
+    --------
+    model_file: (string) path to osim model file
+    state_file: (string) path to sto file
+    output_dir: (string) path to directory to save analysis files
+
+    Returns
+    --------
+    None
+    """
+    model = opensim.Model(model_file)
+
+    # construct static optimization
+    state_storage = opensim.Storage(state_file)
+    muscle_analysis = opensim.MuscleAnalysis()
+    muscle_analysis.setStartTime(state_storage.getFirstTime())
+    muscle_analysis.setEndTime(state_storage.getLastTime())
+    model.addAnalysis(muscle_analysis)
+
+    # analysis
+    analysis = opensim.AnalyzeTool(model)
+    analysis.setName('muscle_analysis')
+    analysis.setModel(model)
+    analysis.setInitialTime(state_storage.getFirstTime())
+    analysis.setFinalTime(state_storage.getLastTime())
+    analysis.setStatesFileName(state_file)
+    # analysis.setLowpassCutoffFrequency(6)
+    analysis.setLoadModelAndInput(True)
+    analysis.setResultsDir(os.path.abspath(output_dir))
+    analysis.run()

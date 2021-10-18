@@ -135,7 +135,7 @@ def assess_parameter_folder_1d(parameter_folder, side):
     total_times = []
     
     # ankle angle
-    var_name = 'ankle_angle_' + side
+    var_names = ['ankle_angle_' + side, 'knee_angle_' + side, 'ankle_moment_' + side]
 
     # spasticity indexes
     spasticity_idx_sol = []
@@ -154,6 +154,13 @@ def assess_parameter_folder_1d(parameter_folder, side):
     for idx in range(len(experiment_sto_files)):
         experiment_sto = experiment_sto_files[idx]
         print(experiment_sto)
+
+        # muscle analysis to compute joint moments
+        sto_dir = os.path.dirname(experiment_sto)+'/'
+        osim_model = sto_dir+'gait0914.osim'
+        if sto_dir.split('\\')[-3] == 'biomechanical':
+            osim_model = extract_sto.modify_model(osim_model, sto_dir)
+        extract_sto.perform_muscle_analysis(osim_model, experiment_sto, sto_dir+'muscle_analysis/')
 
         # score
         experiment_scores.append(float(experiment_sto.rstrip('.par.sto').split('_')[-1]))
@@ -252,11 +259,13 @@ def assess_parameter_folder_1d(parameter_folder, side):
             for n in range(len(experiment_title.split(" "))-1):
                 title = title + " " + experiment_title.split(" ")[s+n]
 
-    psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, title,
-                     report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
-
-    var_name = 'knee_angle_' + side
-    psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, title,
+    for var_name in var_names:
+        if 'moment' in var_name:
+            osim_model = os.path.dirname(experiment_sto)+'/' +'gait0914.osim'  # sto_dir
+            psm.plot_mean_moment_gc(experiment_sto_success, experiment_values_float_success, var_name, side, osim_model,
+                                    title, report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
+        else:
+            psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, title,
                      report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
 
     # export metrics plots
@@ -361,7 +370,7 @@ def assess_parameter_folder_2d(parameter_folder, side):
     experiment_total_time = []
     
     # ankle angle
-    var_name = 'ankle_angle_' + side
+    var_names = 'ankle_angle_' + side
     ME_st = []
     min_es = []
 
