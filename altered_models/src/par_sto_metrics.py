@@ -9,6 +9,7 @@ import matplotlib.colors as mcolors
 import extract_sto
 import seaborn as sns
 import opensim
+from scipy.signal import find_peaks
 
 sns.set_theme()
 sns.set_context("paper", font_scale=1.5)
@@ -132,7 +133,8 @@ def plot_healthy_clinical_angles(ax, var_name):
         norm_max = -(np.array(norm_mean) + 2 * std)
         norm_min = -(np.array(norm_mean) - 2 * std)
 
-    elif var_name in ['ankle_moment_l', 'ankle_moment_r']:
+    #elif var_name in ['ankle_moment_l', 'ankle_moment_r']:
+    else:
         norm_min = [-0.01, -0.14, -0.23, -0.22, -0.19, -0.14, -0.10,
                     -0.06, -0.02, 0.02, 0.08, 0.14, 0.20, 0.27, 0.34, 0.41, 0.48,
                     0.55, 0.63, 0.71, 0.79, 0.87, 0.93, 0.98, 0.99, 0.95, 0.83,
@@ -159,6 +161,144 @@ def plot_healthy_clinical_angles(ax, var_name):
 
     time_vector = np.linspace(0, 100, len(norm_min))
     ax.fill_between(time_vector, norm_min, norm_max, facecolor='silver', alpha=0.5, label='clin.', zorder=5)
+
+
+def plot_columns_std3(column_values1, std_values1, column_values3, std_values3, parameter_values, column_name, x_label,
+                      export_path, healthy_value, healthy_metric1, std_healthy1, healthy_metric3, std_healthy3,
+                      inv=False, column_values2=None, std_values2=None, healthy_metric2=0, std_healthy2=0, plot=False):
+    '''Plots values of a column during gait cycle, stance and swing phases with parameter_values on x axis.
+    Parameters
+    -------
+    column_values1: values to be plotted
+    std_values1: values std to be plotted
+    parameter_values: values on x axis
+    column_name: name of the column, y axis legend
+    x_label: name of the parameters
+    export_path: folder path of export_file
+    healthy value: value from healthy sto file of interest
+    healthy metric: value of the metric for healthy optimisation
+    std_healthy: std value of the metric for healthy optimisation
+    inv: bool to inverse decreasing parameter values
+    column_values2: values to be plotted
+    std_values2: values std to be plotted
+    healthy metric2: value of the metric for healthy optimisation
+    std_healthy2: std value of the metric for healthy optimisation
+    plot: bool to show plot
+
+    Returns
+    -------
+    None
+    '''
+    fig, ax = plt.subplots()
+    parameter_values_extended = parameter_values + [healthy_value]
+    column_values_extended1 = column_values1 + [healthy_metric1]
+    column_std_extended1 = std_values1 + [std_healthy1]
+    column_values_extended3 = column_values3 + [healthy_metric3]
+    column_std_extended3 = std_values3 + [std_healthy3]
+    if column_values2 is not None:
+        column_values_extended2 = column_values2 + [healthy_metric2]
+        column_std_extended2 = std_values2 + [std_healthy2]
+    sorted_idx = np.argsort(parameter_values_extended)
+    parameter_values_extended = [parameter_values_extended[idx] for idx in sorted_idx]
+    column_values_extended1 = [column_values_extended1[idx] for idx in sorted_idx]
+    column_std_extended1 = [column_std_extended1[idx] for idx in sorted_idx]
+    column_values_extended3 = [column_values_extended3[idx] for idx in sorted_idx]
+    column_std_extended3 = [column_std_extended3[idx] for idx in sorted_idx]
+    if column_values2 is not None:
+        column_values_extended2 = [column_values_extended2[idx] for idx in sorted_idx]
+        column_std_extended2 = [column_std_extended2[idx] for idx in sorted_idx]
+
+    if column_name.split("_")[0] == "ME" and column_values2 is None:
+        #label1 = 'ME ST'
+        label1 = 'mean ST'
+        label2 = 'max ST'
+        color1 = 'tab:cyan'
+        color2 = 'darkgrey'
+    elif column_name.split("_")[0] == "ME" and column_values2 is not None:
+        """label1 = 'min ES'
+        color1 = 'darkorange'
+        label2 = 'ME ST'
+        color2 = 'tab:cyan'"""
+        label1 = 'mean ST'
+        label2 = 'max ST'
+        color1 = 'tab:cyan'
+        color2 = 'tab:cyan'
+        """if 'stance' in x_label:
+            label3 = r'$\Delta$' + ' moment peaks'
+        else:
+            label3 = 'max moment'"""
+        color3 = 'darkorange'
+    elif column_name.split("_")[0] == "mstance":
+        label1 = 'stance T'
+        color1 = 'tab:blue'
+        label2 = 'step L'
+        color2 = 'dimgrey'
+    elif column_name.split("_")[0] == "spasticity":
+        label1 = 'SOL'
+        color1 = 'dimgrey'
+        label2 = 'GAS'
+        color2 = 'darkred'
+    delta = parameter_values_extended[1] - parameter_values_extended[0]
+    if inv:
+        ax.errorbar(np.array(parameter_values_extended) + delta / 20, column_values_extended1, column_std_extended1,
+                    color=color1, marker='D', linestyle="None", label=label1)
+        if column_values2 is not None:
+            ax.errorbar(np.array(parameter_values_extended) + delta / 20, column_values_extended2,
+                     column_std_extended2, color=color2, marker='X', linestyle="None", label=label2, ms=8)
+        ax2 = ax.twinx()
+        ax2.errorbar(np.array(parameter_values_extended) - delta / 20, column_values_extended3, column_std_extended3,
+                    color=color3, marker='D', linestyle="None")
+
+    else:
+        ax.errorbar(np.array(parameter_values_extended) - delta / 20, column_values_extended1, column_std_extended1,
+                    color=color1, marker='D', linestyle="None", label=label1)
+        if column_values2 is not None:
+            ax.errorbar(np.array(parameter_values_extended) - delta / 20, column_values_extended2,
+                         column_std_extended2, color=color2, marker='X', linestyle="None", label=label2, ms=8)
+        ax2 = ax.twinx()
+        ax2.errorbar(np.array(parameter_values_extended) + delta / 20, column_values_extended3, column_std_extended3,
+                    color=color3, marker='D', linestyle="None")
+
+    ax.set_xlabel(x_label + " [%]")
+    ax.set_xticks(parameter_values_extended)
+    if inv:
+        ax.invert_xaxis()
+
+    if column_name.split("_")[0] == "ME":
+        title = 'Ankle comparison'
+        if column_values2 is not None:
+            #y_label1 = "min angle ES " + "(" + column_name.split("_")[-1] + ") [°]"
+            #y_label2 = "mean error (ME) ST " + "(" + column_name.split("_")[-1] + ") [°]"
+            y_label1 = "ankle angle " + "(" + column_name.split("_")[-1] + ") [°]"
+            if 'stance' in x_label:
+                y_label2 = r'$\Delta$' + " moment peaks " + "(" + column_name.split("_")[-1] + ") [Nm/kg]"
+            else:
+                y_label2 = "max moment " + "(" + column_name.split("_")[-1] + ") [Nm/kg]"
+        #else:
+        #   y_label1 = "mean error (ME) ST " + "(" + column_name.split("_")[-1] + ") [°]"
+    elif column_name.split("_")[0] == "mstance":
+        title = 'Gait features'
+        y_label1 = "stance period (T) [s]"
+        y_label2 = "step length (L) [m]"
+    ax.set_ylabel(y_label1, color=color1)
+    if column_values2 is not None:
+        ax2.set_ylabel(y_label2, color=color3)
+        ax2.grid(None)
+    if inv:
+        ax.set_title(title + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
+                     + " to " + str(int(min(min(parameter_values), healthy_value))) + "%")
+    else:
+        ax.set_title(title + " for" + x_label + " from " + str(int(min(min(parameter_values), healthy_value)))
+                     + " to " + str(int(max(max(parameter_values), healthy_value))) + "%")
+
+    if column_values2 is not None:
+        lines, labels = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax2.legend(lines + lines2, labels + labels2, ncol=3, prop={'size': 12})
+    plt.tight_layout()
+    plt.savefig(os.path.join(export_path, column_name + '_std.png'))
+    if not plot:
+        plt.close(fig)
 
 
 def plot_column(column_values, parameter_values, column_name, x_label, export_path, healthy_value, healthy_metric,
@@ -341,14 +481,14 @@ def plot_columns_std(column_values1, std_values1, parameter_values, column_name,
     if column_values2 is not None:
         lines, labels = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax2.legend(lines + lines2, labels + labels2)
+        ax2.legend(lines + lines2, labels + labels2, ncol=2, prop={'size': 12})
     plt.tight_layout()
     plt.savefig(os.path.join(export_path, column_name + '_std.png'))
     if not plot:
         plt.close(fig)
 
 
-def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path, healthy_sto, healthy_value,
+def plot_mean_gc2(sto_files, parameter_values, var_name, side, title, export_path, healthy_sto, healthy_value,
                  inv=False, es='es', plot=False):
     '''Plots averaged variables during gait cycle, for multiple sto files.
     Parameters
@@ -380,14 +520,6 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
 
     fig, ax = plt.subplots()
     par_values = parameter_values
-    for i in range(len(parameter_values)):
-        if int(str(int(parameter_values[i]))) == 100:
-            parameter_values[i] = 100
-        elif int(str(int(parameter_values[i]))[:3]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[3:])
-        elif int(str(int(parameter_values[i]))[-3:]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[:-3])
-
     min_value = np.min(parameter_values)
     max_value = np.max(parameter_values)
     color_offset = mcolors.Normalize(vmin=min_value, vmax=max_value)
@@ -451,7 +583,7 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
         xlabel = title
         ylabel = 'ankle angle (' + side + ')'
         title = "Ankle angle"
-        ax.axhline(y=24, xmin=time[lst] / time[h_av_gait_cycle], xmax=(time[h_av_stance_end]) / time[h_av_gait_cycle],
+        ax.axhline(y=24, xmin=time[lst] / time[h_av_gait_cycle], xmax=time[h_av_stance_end]/ time[h_av_gait_cycle],
                    color="tab:cyan", linewidth=4, label="ST")
         ax.set_ylim((-45, 25))
     if "knee" in var_name:
@@ -485,7 +617,7 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
         elif i == len(handles) - last:
             handles[i] = handles[-last]
             labels[i] = labels[-last]
-    ax.legend(handles, labels)
+    ax.legend(handles, labels, prop={'size': 12})
     plot_healthy_clinical_angles(ax, var_name)
 
     ax.set_xlabel('gait cycle [%]')
@@ -515,7 +647,7 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
                             inv=inv)
 
 
-def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path, healthy_sto, healthy_value,
+def plot_mean_gc(sto_files, parameter_values, var_name, side, osim_model, title, export_path, healthy_sto, healthy_value,
                  inv=False, es='es', plot=False):
     '''Plots averaged variables during gait cycle, for multiple sto files.
     Parameters
@@ -536,24 +668,15 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
     -------
     None
     '''
-    var_names_list = []
-    var_tab_list = []
-    time_list = []
 
-    st_mme = []
-    st_std_me = []
-    es_mmin = []
-    es_std_min = []
+    if 'ankle' in var_name:
+        st_mme = []
+        st_std_me = []
+        es_mmin = []
+        es_std_min = []
 
     fig, ax = plt.subplots()
     par_values = parameter_values
-    for i in range(len(parameter_values)):
-        if int(str(int(parameter_values[i]))) == 100:
-            parameter_values[i] = 100
-        elif int(str(int(parameter_values[i]))[:3]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[3:])
-        elif int(str(int(parameter_values[i]))[-3:]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[:-3])
 
     min_value = np.min(parameter_values)
     max_value = np.max(parameter_values)
@@ -564,18 +687,15 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
     sto_file = healthy_sto
     var_names, var_tab = extract_sto.extract_sto(sto_file)
     time = var_tab[:, 0]
-    var_names_list.append(var_names)
-    var_tab_list.append(var_tab)
-    time_list.append(time)
     _, _, _, lend, lst = extract_sto.me_mean_gait_phases(var_names, var_tab, var_name, side)
     h_av_stance_var, h_av_swing_var, h_av_gait_cycle, h_av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
-                                                                                             var_name, side)
-    av_var_h = np.concatenate((h_av_stance_var, h_av_swing_var))
+                                                                                                     var_name, side)
+    h_av_var = np.concatenate((h_av_stance_var, h_av_swing_var))
 
     if "angle" in var_name:
-        av_var_h = np.multiply(av_var_h, 180 / np.pi)
+        h_av_var = np.multiply(h_av_var, 180 / np.pi)
     label = str(parameter_value)
-    ax.plot(time[:len(av_var_h)] * 100 / time[h_av_gait_cycle], av_var_h, label=label, color='black', linewidth=2,
+    ax.plot(time[:len(h_av_var)] * 100 / time[h_av_gait_cycle], h_av_var, label=label, color='black', linewidth=2,
             linestyle='dashed', zorder=10)
     ax.axvspan(time[h_av_stance_end] * 100 / time[h_av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
 
@@ -590,20 +710,9 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
         parameter_value = parameter_values[idx]
         var_names, var_tab = extract_sto.extract_sto(sto_file)
         time = var_tab[:, 0]
-        var_names_list.append(var_names)
-        var_tab_list.append(var_tab)
-        time_list.append(time)
         av_stance_var, av_swing_var, av_gait_cycle, av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
                                                                                                  var_name, side)
         av_var = np.concatenate((av_stance_var, av_swing_var))
-
-        st_mm, st_std_m = extract_sto.me_stance(sto_file, healthy_sto, var_name, side)
-        st_mme.append(st_mm)
-        st_std_me.append(st_std_m)
-
-        es_min, es_smin = extract_sto.min_ankle_es(sto_file, var_name, side)
-        es_mmin.append(es_min)
-        es_std_min.append(es_smin)
 
         if "angle" in var_name:
             av_var = np.multiply(av_var, 180 / np.pi)
@@ -611,10 +720,44 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
         ax.plot(time[:len(av_var)] * 100 / time[av_gait_cycle], av_var, label=label,
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
-    if es == "es":
-        ax.axhline(y=24, xmin=0, xmax=time[lst - 1] / time[h_av_gait_cycle], color="darkorange", linewidth=4,
-                   label="ES")
+        if "ankle" in var_name:
+            # compute and plot 3rd ankle rocker time
+            vel_name = var_name + '_u'
+            av_stance_vel, av_swing_vel, av_gait_cycle, av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
+                                                                                                     vel_name, side)
+            av_vel = np.concatenate((av_stance_vel, av_swing_vel))
+            if av_vel[0] < 0:
+                third_rocker = np.where(np.diff(np.sign(av_vel)) < 0)[0][0]
+            else:
+                third_rocker = np.where(np.diff(np.sign(av_vel)) < 0)[0][1]
+            ax.plot(time[third_rocker] * 100 / time[av_gait_cycle], av_var[third_rocker], marker='x',
+                    color=cmap(color_offset(parameter_value)), zorder=10)
+
+            # compute ankle kinematics metrics
+            st_mm, st_std_m, es_min, es_smin = extract_sto.mean_stance(sto_file, var_name, side)  # extract_sto.me_stance(sto_file, healthy_sto, var_name, side)
+            st_mme.append(st_mm)
+            st_std_me.append(st_std_m)
+
+            #es_min, es_smin = extract_sto.max_stance(sto_file, var_name, side)  # extract_sto.min_ankle_es(sto_file, var_name, side)
+            es_mmin.append(es_min)
+            es_std_min.append(es_smin)
+
     if "ankle" in var_name:
+        # compute and plot healthy 3rd ankle rocker time
+        sto_file = healthy_sto
+        var_names, var_tab = extract_sto.extract_sto(sto_file)
+        vel_name = var_name + '_u'
+        h_av_stance_vel, h_av_swing_vel, h_av_gait_cycle, h_av_stance_end = extract_sto.mean_gait_phases(var_names,
+                                                                                                         var_tab,
+                                                                                                         vel_name,
+                                                                                                         side)
+        h_av_vel = np.concatenate((h_av_stance_vel, h_av_swing_vel))
+        if h_av_vel[0] < 0:
+            h_third_rocker = np.where(np.diff(np.sign(h_av_vel)) < 0)[0][0]
+        else:
+            h_third_rocker = np.where(np.diff(np.sign(h_av_vel)) < 0)[0][1]
+        ax.plot(time[h_third_rocker] * 100 / time[h_av_gait_cycle], h_av_var[h_third_rocker], label='3rd rocker',
+                marker='x', linestyle='None', color='black', zorder=10)
         xlabel = title
         ylabel = 'ankle angle (' + side + ')'
         title = "Ankle angle"
@@ -631,12 +774,9 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
 
     # sort both labels and handles by labels
     handles, labels = ax.get_legend_handles_labels()
-    if es == 'es':
-        labls, handls = zip(*sorted(zip(labels[:-2], handles[:-2]), key=lambda t: float(t[0])))
-        last = 2
-    else:
-        labls, handls = zip(*sorted(zip(labels[:-1], handles[:-1]), key=lambda t: float(t[0])))
-        last = 1
+
+    labls, handls = zip(*sorted(zip(labels[:-2], handles[:-2]), key=lambda t: float(t[0])))
+    last = 2
     if float(labls[0]) < 100:
         labls = labls[::-1]
         handls = handls[::-1]
@@ -647,13 +787,14 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
         if i < len(handles) - last:
             handles[i] = handls[i]
             labels[i] = Labels[i]
-        elif es=='es' and i == len(handles)-1:
+        #elif es=='es' and i == len(handles)-1:
+        elif i == len(handles)-1:
             handles[i] = handles[-1]
             labels[i] = labels[-1]
         elif i == len(handles) - last:
             handles[i] = handles[-last]
             labels[i] = labels[-last]
-    ax.legend(handles, labels)
+    ax.legend(handles, labels, prop={'size': 12})
     plot_healthy_clinical_angles(ax, var_name)
 
     ax.set_xlabel('gait cycle [%]')
@@ -674,17 +815,29 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
 
     # ME
     if ylabel.split(" ")[0] == "ankle":
+        # plot and compute ankle moment metrics
+        mom_name = 'ankle_moment_' + side
+        mdelta_mom_peaks, sdelta_mom_peaks, mmax_mom_peaks, smax_mom_peaks, h_mdelta, h_sdelta, h_mmax, h_smax = \
+            plot_mean_moment_gc(sto_files, par_values, mom_name, side, osim_model, xlabel, export_path,
+                                healthy_sto, healthy_value, inv=inv, plot=False)
         if es == 'es':
-            h_es_min, h_es_smin = extract_sto.min_ankle_es(healthy_sto, var_name, side)
-            plot_columns_std(es_mmin, es_std_min, par_values, "ME_" + side, xlabel, export_path, healthy_value, h_es_min,
-                             h_es_smin, column_values2=st_mme, std_values2=st_std_me, inv=inv)
+            h_mme, h_sme, h_es_min, h_es_smin = extract_sto.mean_stance(healthy_sto, var_name, side) #extract_sto.min_ankle_es(healthy_sto, var_name, side)
+            plot_columns_std3(st_mme, st_std_me, mdelta_mom_peaks, sdelta_mom_peaks, par_values, "ME_" + side, xlabel,
+                              export_path, healthy_value, h_mme, h_sme, h_mdelta, h_sdelta, column_values2=es_mmin,
+                              std_values2=es_std_min, healthy_metric2=h_es_min, std_healthy2=h_es_smin, inv=inv)
+            #plot_columns_std(es_mmin, es_std_min, par_values, "ME_" + side, xlabel, export_path, healthy_value, h_es_min,
+            #                 h_es_smin, column_values2=st_mme, std_values2=st_std_me, inv=inv)
         else:
-            plot_columns_std(st_mme, st_std_me, par_values, "ME_" + side, xlabel, export_path, healthy_value, 0, 0,
-                            inv=inv)
+            h_mme, h_sme, h_es_min, h_es_smin = extract_sto.mean_stance(healthy_sto, var_name, side)
+            plot_columns_std3(st_mme, st_std_me, mmax_mom_peaks, smax_mom_peaks, par_values, "ME_" + side, xlabel,
+                              export_path, healthy_value, h_mme, h_sme, h_mmax, h_smax, column_values2=es_mmin,
+                              std_values2=es_std_min, healthy_metric2=h_es_min, std_healthy2=h_es_smin, inv=inv)
+            #plot_columns_std(st_mme, st_std_me, par_values, "ME_" + side, xlabel, export_path, healthy_value, h_mme, h_sme,
+            #                inv=inv)
 
 
 def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model, title, export_path, healthy_sto,
-                        healthy_value, inv=False, es='es', plot=False):
+                        healthy_value, inv=False, plot=False):
     '''Plots averaged variables during gait cycle, for multiple sto files.
     Parameters
     ----------
@@ -705,16 +858,13 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     None
     '''
 
+    mdelta_mom_peaks = []
+    sdelta_mom_peaks = []
+    mmax_mom_peaks = []
+    smax_mom_peaks = []
+
     fig, ax = plt.subplots()
     fig2, ax2 = plt.subplots()
-
-    for i in range(len(parameter_values)):
-        if int(str(int(parameter_values[i]))) == 100:
-            parameter_values[i] = 100
-        elif int(str(int(parameter_values[i]))[:3]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[3:])
-        elif int(str(int(parameter_values[i]))[-3:]) == 100:
-            parameter_values[i] = int(str(int(parameter_values[i]))[:-3])
 
     min_value = np.min(parameter_values)
     max_value = np.max(parameter_values)
@@ -725,25 +875,12 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     sto_file = healthy_sto
     sto_dir = os.path.dirname(healthy_sto)
 
-    # find moment file of interest
-    _, _, filenames = next(os.walk(sto_dir + '/muscle_analysis/'))
-    moment_file = ''
+    # moment
+    moment_norm = extract_sto.norm_moment(sto_file, var_name, side)
+
     joint_name = var_name.split('_')[0]
-    for f in filenames:
-        if '_Moment_' + joint_name + '_angle_' + side in f:
-            moment_file = f
-    moment_names, moment_tab = extract_sto.extract_sto(sto_dir + '/muscle_analysis/' + moment_file)
-
-    # get model total mass (for normalisation)
-    model = opensim.Model(osim_model)
-    s = model.initSystem()
-    mass = model.getTotalMass(s)
-
-    # normalise joint moment
-    moment_norm = -np.sum(moment_tab[:, 1:], axis=1) / mass
-
     var_names, var_tab = extract_sto.extract_sto(sto_file)
-    time = var_tab[:, 0]
+    h_time = var_tab[:, 0]
     _, _, _, lend, lst = extract_sto.me_mean_gait_phases(var_names, var_tab, 'time', side)
 
     h_av_stance_mom, h_av_swing_mom, h_av_gait_cycle, h_av_stance_end = extract_sto.mean_gait_phases(var_names, var_tab,
@@ -755,14 +892,18 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     h_av_mom = np.concatenate((h_av_stance_mom, h_av_swing_mom))
     h_av_pow = np.concatenate((h_av_stance_vel, h_av_swing_vel)) * -h_av_mom
 
-    label = str(parameter_value)
-    ax.plot(time[:len(h_av_mom)] * 100 / time[h_av_gait_cycle], h_av_mom, label=label, color='black', linewidth=2,
-            linestyle='dashed', zorder=10)
-    ax.axvspan(time[h_av_stance_end] * 100 / time[h_av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
+    h_mom_peaks, _ = find_peaks(h_av_stance_mom, distance=len(h_av_stance_mom))
+    h_mdelta, h_sdelta, h_mmax, h_smax = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
 
-    ax2.plot(time[:len(h_av_pow)] * 100 / time[h_av_gait_cycle], h_av_pow, label=label, color='black', linewidth=2,
+    label = str(parameter_value)
+    ax.plot(h_time[:len(h_av_mom)] * 100 / h_time[h_av_gait_cycle], h_av_mom, label=label, color='black', linewidth=2,
             linestyle='dashed', zorder=10)
-    ax2.axvspan(time[h_av_stance_end] * 100 / time[h_av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
+
+    ax.axvspan(h_time[h_av_stance_end] * 100 / h_time[h_av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
+
+    ax2.plot(h_time[:len(h_av_pow)] * 100 / h_time[h_av_gait_cycle], h_av_pow, label=label, color='black', linewidth=2,
+            linestyle='dashed', zorder=10)
+    ax2.axvspan(h_time[h_av_stance_end] * 100 / h_time[h_av_gait_cycle], 100, alpha=0.5, color='blanchedalmond', zorder=0)
 
     if min_value > healthy_value:
         hex_list = ['#0000ff', '#ff0000']
@@ -774,18 +915,9 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     for idx in range(0, len(sto_files)):
         sto_file = sto_files[idx]
         parameter_value = parameter_values[idx]
-        sto_dir = os.path.dirname(sto_file)
 
-        # find moment files of interest
-        _, _, filenames = next(os.walk(sto_dir + '/muscle_analysis/'))
-        moment_file = ''
-        for f in filenames:
-            if '_Moment_' + joint_name + '_angle_' + side in f:
-                moment_file = f
-        moment_names, moment_tab = extract_sto.extract_sto(sto_dir + '/muscle_analysis/'+moment_file)
-
-        # normalise joint moment
-        moment_norm = -np.sum(moment_tab[:, 1:], axis=1) / mass
+        # moment
+        moment_norm = extract_sto.norm_moment(sto_file, var_name, side)
 
         var_names, var_tab = extract_sto.extract_sto(sto_file)
         time = var_tab[:, 0]
@@ -798,15 +930,34 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
         av_mom = np.concatenate((av_stance_mom, av_swing_mom))
         av_pow = np.concatenate((av_stance_vel, av_swing_vel)) * -av_mom
 
+        # compute moment peaks
+        first_mom_peaks, _ = find_peaks(av_stance_mom[:int(0.33*len(av_stance_mom))],
+                                        distance=int(0.33*len(av_stance_mom)))
+        sec_mom_peaks, _ = find_peaks(av_stance_mom[int(0.33 * len(av_stance_mom)):],
+                                        distance=int(0.66*len(av_stance_mom)))
+
         label = str(parameter_value)
         ax.plot(time[:len(av_mom)] * 100 / time[av_gait_cycle], av_mom, label=label,
                 color=cmap(color_offset(parameter_value)), zorder=10)
+        if len(first_mom_peaks) > 0:
+            ax.plot(time[first_mom_peaks] * 100 / time[av_gait_cycle], av_stance_mom[first_mom_peaks], marker='x',
+                    color=cmap(color_offset(parameter_value)), linestyle='None', zorder=10)
+        ax.plot(time[int(0.33 * len(av_stance_mom))+sec_mom_peaks] * 100 / time[av_gait_cycle],
+                av_stance_mom[int(0.33 * len(av_stance_mom))+sec_mom_peaks], marker='x',
+                color=cmap(color_offset(parameter_value)), linestyle='None', zorder=10)
         ax2.plot(time[:len(av_pow)] * 100 / time[av_gait_cycle], av_pow, label=label,
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
-    """if es == "es":
-        ax.axhline(y=24, xmin=0, xmax=time[lst - 1] / time[h_av_gait_cycle], color="darkorange", linewidth=4,
-                   label="ES")"""
+        mdelta, sdelta, mmax, smax = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
+        mdelta_mom_peaks.append(mdelta)
+        sdelta_mom_peaks.append(sdelta)
+        mmax_mom_peaks.append(mmax)
+        smax_mom_peaks.append(smax)
+
+    # plot healthy moment peak
+    ax.plot(h_time[h_mom_peaks] * 100 / h_time[h_av_gait_cycle], h_av_stance_mom[h_mom_peaks], marker='x', label='peaks',
+            color='black', linestyle='None', zorder=10)
+
     xlabel = title
     ylabel = joint_name + ' moment'
     ylabel2 = joint_name + ' power'
@@ -815,9 +966,6 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     title = ylabel.split(" ")
     title[0] = title[0].capitalize()
     title = " ".join(title)
-    title2 = ylabel2.split(" ")
-    title2[0] = title2[0].capitalize()
-    title2 = " ".join(title2)
     #ax.axhline(y=24, xmin=time[lst] / time[h_av_gait_cycle], xmax=(time[h_av_stance_end]) / time[h_av_gait_cycle],
     #           color="tab:cyan", linewidth=4, label="ST")
     ax.set_ylim((-0.5, 2.5))
@@ -825,14 +973,8 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
 
     # sort both labels and handles by labels
     handles, labels = ax.get_legend_handles_labels()
-    """if es == 'es':
-        labls, handls = zip(*sorted(zip(labels[:-2], handles[:-2]), key=lambda t: float(t[0])))
-        last = 2
-    else:
-        labls, handls = zip(*sorted(zip(labels[:-1], handles[:-1]), key=lambda t: float(t[0])))
-        last = 1"""
-    labls, handls = zip(*sorted(zip(labels[:], handles[:]), key=lambda t: float(t[0])))
-    last = 0
+    labls, handls = zip(*sorted(zip(labels[:-1], handles[:-1]), key=lambda t: float(t[0])))
+    last = 1
     if float(labls[0]) < 100:
         labls = labls[::-1]
         handls = handls[::-1]
@@ -842,14 +984,11 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
         if i < len(handles) - last:
             handles[i] = handls[i]
             labels[i] = Labels[i]
-        elif es=='es' and i == len(handles)-1:
-            handles[i] = handles[-1]
-            labels[i] = labels[-1]
         elif i == len(handles) - last:
             handles[i] = handles[-last]
             labels[i] = labels[-last]
-    ax.legend(handles, labels)
-    ax2.legend(handles, labels)
+    ax.legend(handles, labels, prop={'size': 12})
+    ax2.legend(handles, labels, prop={'size': 12})
     plot_healthy_clinical_angles(ax, var_name)
 
     ax.set_xlabel('gait cycle [%]')
@@ -860,13 +999,9 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     if inv:
         ax.set_title(title + " for" + xlabel + " from " + str(max(parameter_values))
                      + " to " + str(min(parameter_values)) + "%")
-        ax2.set_title(title2 + " for" + xlabel + " from " + str(max(parameter_values))
-                     + " to " + str(min(parameter_values)) + "%")
     else:
         ax.set_title(title + " for" + xlabel + " from " + str(min(parameter_values))
                      + " to " + str(max(parameter_values)) + "%")
-        ax2.set_title(title2 + " for" + xlabel + " from " + str(max(parameter_values))
-                     + " to " + str(min(parameter_values)) + "%")
 
     fig.tight_layout()
     fig2.tight_layout()
@@ -874,6 +1009,8 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, osim_model,
     fig2.savefig(os.path.join(export_path, joint_name + '_power.png'))
     if not plot:
         plt.close(fig)
+
+    return mdelta_mom_peaks, sdelta_mom_peaks, mmax_mom_peaks, smax_mom_peaks, h_mdelta, h_sdelta, h_mmax, h_smax
 
 
 def get_sto_total_time(sto_file):
