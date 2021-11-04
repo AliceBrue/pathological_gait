@@ -135,7 +135,7 @@ def assess_parameter_folder_1d(parameter_folder, side):
     total_times = []
     
     # ankle angle
-    var_names = ['ankle_angle_' + side, 'knee_angle_' + side]
+    var_names = ['ankle_angle_' + side, 'knee_angle_' + side, 'hip_flexion_' + side]
 
     # spasticity indexes
     spasticity_idx_sol = []
@@ -253,14 +253,8 @@ def assess_parameter_folder_1d(parameter_folder, side):
                 title = title + " " + experiment_title.split(" ")[s+n]
 
     for var_name in var_names:
-        """if 'moment' in var_name:
-            osim_model = os.path.dirname(experiment_sto)+'/' +'gait0914.osim'  # sto_dir
-            psm.plot_mean_moment_gc(experiment_sto_success, experiment_values_float_success, var_name, side, osim_model,
-                                    title, report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
-        else:"""
-        osim_model = os.path.dirname(experiment_sto)+'/' +'gait0914.osim'
-        psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, osim_model, title,
-                     report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
+        psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, var_name, side, title,
+                         report_folder, healthy_sto=healthy_sto, healthy_value=healthy_value, inv=inv, es=es)
 
     # export metrics plots
     for metric in experiments_dict:
@@ -380,6 +374,34 @@ def assess_parameter_folder_2d(parameter_folder, side):
     spasticity_idx_gas = []
 
     healthy_sto = get_healthy_sto()
+    # healthy metrics
+    score_healthy = float(healthy_sto.rstrip('.par.sto').split('_')[-1])
+    total_time_healthy = psm.get_sto_total_time(healthy_sto)
+
+    me_h, _, min_es_h, min_std_es = extract_sto.mean_stance(healthy_sto, var_name,
+                                                            side)  # extract_sto.min_ankle_es(healthy_sto, var_name, side)
+    step_length_h, sstep_length, speed_h = extract_sto.gait_features(healthy_sto)
+    stance_period_h, sstance_period = extract_sto.stance_period(healthy_sto, side)
+
+    moment_norm = extract_sto.norm_moment(healthy_sto, var_name, side)
+    var_names, var_tab = extract_sto.extract_sto(healthy_sto)
+    mdelta_h, sdelta_h, mmax_h, smax_h = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
+
+    spas_idx_sol_h, spas_std_sol_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "soleus",
+                                                                                  side, plot=False)
+    spas_idx_gas_h, spas_std_gas_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "gastroc",
+                                                                                  side, plot=False)
+    experiments_dict_healthy = {'score': score_healthy,
+                                'total_time': total_time_healthy,
+                                'ME_st': me_h-me_h,
+                                'min_es': min_es_h,
+                                'stance_period': stance_period_h,
+                                'step_length': step_length_h,
+                                'speed': speed_h,
+                                'moment_peaks': mdelta_h,
+                                'moment_max': mmax_h-mmax_h,
+                                'spasticity_index_sol': spas_idx_sol_h,
+                                'spasticity_index_gas': spas_idx_gas_h}
     
     for idx in range(len(experiment_sto_files)):
         experiment_sto = experiment_sto_files[idx]
@@ -442,47 +464,19 @@ def assess_parameter_folder_2d(parameter_folder, side):
         
     experiments_dict = {'score': experiment_scores_success,
                         'total_time': experiment_total_time,
-                        'ME_st': ME_st,
+                        'ME_st': ME_st - me_h,
                         'min_es': min_es,
                         'stance_period': stance_period,
                         'step_length': step_length,
                         'speed': speed,
                         'moment_peaks': moment_peaks,
-                        'moment_max': moment_max,
+                        'moment_max': moment_max - mmax_h,
                         'spasticity_index_sol': spasticity_idx_sol,
                         'spasticity_index_gas': spasticity_idx_gas}
 
     experiment_values_tuple = list(zip(*[experiment_values_stance, experiment_values_swing]))
     df_index = pd.MultiIndex.from_tuples(experiment_values_tuple, names=['stance', 'swing'])
     experiments_df = pd.DataFrame(experiments_dict, index=df_index)
-    
-    # healthy metrics
-    score_healthy = float(healthy_sto.rstrip('.par.sto').split('_')[-1])
-    total_time_healthy = psm.get_sto_total_time(healthy_sto)
-
-    me_h, _, min_es_h, min_std_es = extract_sto.mean_stance(healthy_sto, var_name, side) #extract_sto.min_ankle_es(healthy_sto, var_name, side)
-    step_length_h, sstep_length, speed_h = extract_sto.gait_features(healthy_sto)
-    stance_period_h, sstance_period = extract_sto.stance_period(healthy_sto, side)
-
-    moment_norm = extract_sto.norm_moment(healthy_sto, var_name, side)
-    var_names, var_tab = extract_sto.extract_sto(healthy_sto)
-    mdelta_h, sdelta_h, mmax_h, smax_h = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
-
-    spas_idx_sol_h, spas_std_sol_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "soleus",
-                                                                                  side, plot=False)
-    spas_idx_gas_h, spas_std_gas_h = spasticity_index.all_cycles_spasticity_index(healthy_sto, "gastroc",
-                                                                                  side, plot=False)
-    experiments_dict_healthy = {'score': score_healthy,
-                                'total_time': total_time_healthy,
-                                'ME_st': me_h,
-                                'min_es': min_es_h,
-                                'stance_period': stance_period_h,
-                                'step_length': step_length_h,
-                                'speed': speed_h,
-                                'moment_peaks': mdelta_h,
-                                'moment_max': mmax_h,
-                                'spasticity_index_sol': spas_idx_sol_h,
-                                'spasticity_index_gas': spas_idx_gas_h}
     
     report_folder = os.path.join(parameter_folder_str, 'report')
     if not os.path.exists(report_folder):
@@ -500,21 +494,54 @@ def assess_parameter_folder_2d(parameter_folder, side):
             df2 = df2[df2.columns[::-1]]
         else:
             df2 = df2[::-1]
-        
+
+        es = 'es'
+        if folder_name == 'stance_KS_swing_KS':
+            par = 'increased stance and swing KS'
+        elif folder_name == 'stance_TA_KS_swing_TA_KS':
+            par = 'increased stance and swing TA KS'
+        elif folder_name == 'stance_KL_swing_KL':
+            par = 'increased stance and swing KL'
+            es = 'no'
+        elif folder_name == 'stance_KF_stance_KL':
+            par = 'decreased stance KF and KL'
+            es = 'no'
+
         map = "RdBu"
         if metric == 'ME_st':
-            lab = 'mean angle ST [°]' #'ME ST [°]'
+            lab = r'$\Delta_{h}$'+' mean angle ST [°]' #'ME ST [°]'
+            if es == 'es':
+                vmin = -10
+                vmax = 0
+            else:
+                vmin = 0
+                vmax = 4
         elif metric == 'min_es':
             lab = 'max angle ST [°]' #'min ES [°]'
+            vmin = 15
+            vmax = 20
         elif metric == 'moment_peaks':
             lab = r'$\Delta$'+' moment peaks [Nm/kg]'
+            vmin = -1
+            vmax = 2
         elif metric == 'moment_max':
-            lab = 'max moment [Nm/kg]'
+            lab = r'$\Delta_{h}$'+' mean moment [Nm/kg]'
+            vmin = -0.2
+            vmax = 0
         elif metric == 'step_length':
             lab = 'step length [m]'
+            vmin = 0.5
+            vmax = 1
+        elif metric == 'stance_period':
+            lab = 'stance period [s]'
+            vmin = 50
+            vmax = 64
         else:
             lab = metric
-        ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric], cbar_kws={'label': lab})
+            vmin = None
+            vmax = None
+        ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric], cbar_kws={'label': lab},
+                         vmax=vmax, vmin=vmin)
         if folder_name == "stance_KF_stance_KL":
             ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
         elif folder_name == "stance_TA_KS_swing_TA_KS":
@@ -523,28 +550,20 @@ def assess_parameter_folder_2d(parameter_folder, side):
             ax.set(xlabel=folder_name_split[2]+" "+folder_name_split[3]+' [%]',
                    ylabel=folder_name_split[0]+" "+folder_name_split[1]+' [%]')
 
-        if folder_name == 'stance_KS_swing_KS':
-            par = 'increased stance and swing KS'
-        elif folder_name == 'stance_TA_KS_swing_TA_KS':
-            par = 'increased stance and swing TA KS'
-        elif folder_name == 'stance_KL_swing_KL':
-            par = 'increased stance and swing KL'
-        elif folder_name == 'stance_KF_stance_KL':
-            par = 'decreased stance KF and KL'
         if metric == 'spasticity_index_sol':
             title = 'Mean SOL spasticity index ('+side+') \n for '+par
         elif metric == 'spasticity_index_gas':
             title = 'Mean GAS spasticity index ('+side+') \n for '+par
         elif metric == 'ME_st':
             #title = 'Mean ankle angle ME over the ST phase \n for '+par
-            title = 'Mean ankle angle over the ST phase \n for ' + par
+            title = r'$\Delta_{h}$' + ' mean ankle angle over the ST phase \n for ' + par
         elif metric == 'min_es':
             #title = 'Mean ankle angle min during the ES phase \n for '+par
             title = 'Max ankle angle over the ST phase \n for ' + par
         elif metric == 'moment_peaks':
             title = r'$\Delta$'+' ankle moment peaks \n for ' + par
         elif metric == 'moment_max':
-            title = 'Max ankle moment \n for ' + par
+            title = r'$\Delta_{h}$' +' mean ankle moment \n for ' + par
         elif metric == 'step_length':
             title = 'Mean step length \n for '+par
         else:

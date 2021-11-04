@@ -10,7 +10,7 @@ import assess_results_folder as arf
 case = '2D'
 side = 'l'  # 'l' or 'r' for left or right leg plots
 
-results_folder = "../results/"  #"../../../results/"
+results_folder = "../../../results/"
 results_folder_1d = os.path.join(results_folder, '1D')
 results_folder_2d = os.path.join(results_folder, '2D')
 

@@ -137,7 +137,7 @@ def add_healthy_range_schwartz(ax, var_name):
     -------
     None
     """
-    norm_min = None
+    norm_mean = None
     norm_max = None
     if "pelvis_tilt" in var_name:
         norm_min = np.multiply([7.2, 7.1, 7.0, 6.7, 6.4, 6.1, 6.0,
@@ -318,11 +318,11 @@ def add_healthy_range_schwartz(ax, var_name):
                     -0.01, -0.01, -0.01, -0.01, -0.01, -0.01, -0.01,
                     -0.01, -0.01, -0.01, -0.01, -0.01, -0.01, -0.01,
                     0.00, 0.00, 0.01, 0.01, 0.01]
-    std = np.array(norm_max) - np.array(norm_mean)
-    norm_max = np.array(norm_mean) + 2 * std
-    norm_min = np.array(norm_mean) - 2 * std
 
-    if norm_min is not None and norm_max is not None:
+    if norm_mean is not None and norm_max is not None:
+        std = np.array(norm_max) - np.array(norm_mean)
+        norm_max = np.array(norm_mean) + 2 * std
+        norm_min = np.array(norm_mean) - 2 * std
         time_vector = np.linspace(0, 100, len(norm_min))
         ax.fill_between(time_vector, norm_min, norm_max,
                         facecolor='silver', alpha=0.5, label='clin.', zorder=5)
