@@ -612,55 +612,6 @@ def generate_controllers_with_key_combinations(series, key_dict_list, output_fol
         set_unique_key_on_file(combination_main_file_path, 'signature_prefix', '"{}"'.format(combination_name))
 
 
-def generate_scone_main_files0(series, key_dict, output_folder_path, scone_base_files_path,
-                                               main_file_name):
-    '''Takes as input a dictionnary defining multiple altered values of a biomechanical parameter.
-    and generate the folder structure used to run SCONE simulations for each combination of values.
-    key_dict is a dictionary defining an altered parameter for two targets with pourcent key_values ex:
-    key_dict = {'key_name': 'max_isometric_force', 'target': ['soleus', 'gastroc'], 'key_values': range(0,100,10)}
-    Parameters
-    ----------
-    series: (PANDAS Series) recursive series containing controller data.
-    key_dict: (dict) dictionary defining multiple altered values of a biomechanical parameter.
-    output_folder_path: (string) export folder path.
-    scone_base_files_path: (string) path to SCONE base files, necessary to run SCONE simulations.
-    main_file_name: (string) name of the main SCONE file.
-
-    Returns
-    -------
-    None.
-    '''
-    prefix = output_folder_path.split('/')[-1]
-    value_combinations = key_dict['key_values']
-
-    if not os.path.exists(output_folder_path):
-        os.mkdir(output_folder_path)
-
-    for value_combination in value_combinations:
-        combination_series = series_deep_copy(series)
-        combination_dict = key_dict.copy()
-        combination_name = prefix
-        key_dict = combination_dict
-        key_value = value_combination
-        key_dict['key_values'] = key_value
-        combination_name = '_'.join([combination_name, str(key_value)])
-
-        combination_folder_path = output_folder_path + '/' + combination_name
-        if not os.path.exists(combination_folder_path):
-            os.mkdir(combination_folder_path)
-
-        # export new scone controller file
-        series_to_scone_file(combination_series, '{}/gait_controller.scone'.format(combination_folder_path))
-        # copy scone base files
-        shutil.copytree(scone_base_files_path, combination_folder_path + '/base_files')
-
-        combination_main_file_path = combination_folder_path + '/base_files/' + main_file_name
-        set_unique_key_on_file(combination_main_file_path, 'signature_prefix', '"{}"'.format(combination_name))
-
-        scone_main_file_path = combination_folder_path + '/base_files/' + main_file_name
-        set_scone_main_file_gain(scone_main_file_path, prefix, key_dict['target'], key_value)
-
-
 def generate_scone_main_files(series, key_dict_list, output_folder_path, scone_base_files_path,
                                                main_file_name):
     '''Takes as input a dictionnary defining multiple altered values of a biomechanical parameter.
@@ -738,32 +689,6 @@ def set_scone_main_file_gain(scone_main_file, param_names, targets, key_values):
                 for i in range(len(targets[p])):
                     new_lines.append('\t\t\t\t'+targets[p][i]+'_l {' + param_names[p] + '.factor = ' + str(key_values[p]/100) + '}\n')
                     new_lines.append('\t\t\t\t'+targets[p][i]+'_r {' + param_names[p] + '.factor = ' + str(key_values[p]/100) + '}\n')
-            new_lines.append('\t\t\t\t}\n')
-    file.close()
-
-    # write new file
-    file = open(scone_main_file, 'w')
-    for l in new_lines:
-        file.write(l)
-    file.close()
-
-def set_scone_main_file_gain0(scone_main_file, param_name, targets, key_value):
-    """Sets new key value of a biomechanical parameter in scone main file.
-    Parameters
-    --------
-    """
-    file = open(scone_main_file, 'r')
-    lines = file.readlines()
-    new_lines = []
-    for l in range(len(lines)):
-        new_lines.append(lines[l])
-        if len(lines[l].split()) > 1 and lines[l].split()[-1] == '"*_tx;*_ty;*_u"':
-            new_lines.append('\n')
-            new_lines.append('\t\t\tProperties {\n')
-            new_lines.append('\t\t\t\t'+targets[0]+'_l {' + param_name + '.factor = ' + str(key_value/100) + '}\n')
-            new_lines.append('\t\t\t\t'+targets[0]+'_r {' + param_name + '.factor = ' + str(key_value/100) + '}\n')
-            new_lines.append('\t\t\t\t'+targets[1]+'_l {' + param_name + '.factor = ' + str(key_value/100) + '}\n')
-            new_lines.append('\t\t\t\t'+targets[1]+'_r {' + param_name + '.factor = ' + str(key_value/100) + '}\n')
             new_lines.append('\t\t\t\t}\n')
     file.close()
 
