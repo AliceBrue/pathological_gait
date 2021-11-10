@@ -7,11 +7,11 @@ from pathlib import Path
 import assess_results_folder as arf
 
 # Set this to '1D' or '2D' to analyze 1D or 2D experiment results
-case = '2D'
+case = '1D'
 side = 'l'  # 'l' or 'r' for left or right leg plots
 
 results_folder = "../../../results/"
-results_folder_1d = os.path.join(results_folder, '1D')
+results_folder_1d = os.path.join(results_folder, 'std_1d')
 results_folder_2d = os.path.join(results_folder, '2D')
 
 # extract folders for each 1d optimization

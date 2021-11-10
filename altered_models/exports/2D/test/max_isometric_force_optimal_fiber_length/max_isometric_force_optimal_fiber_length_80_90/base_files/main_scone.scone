@@ -1,0 +1,40 @@
+CmaOptimizer {
+	
+signature_prefix = "max_isometric_force_optimal_fiber_length_80_90"	
+	max_generations = 500
+
+	init_file = parameters/optimisation.par  
+	use_init_file = true
+	use_init_file_std = true
+	# max_threads = 1
+	lambda = 40
+	sigma = 5 
+	
+	SimulationObjective {
+		max_duration = 15
+		
+		# Model used in simulation
+		ModelOpenSim3 {
+			model_file = import/models/gait0914.osim
+			
+			# Optimize initial state parameters
+			state_init_file = states/initial_state.sto
+			initial_state_offset =	0~0.01<-0.5,0.5>	
+			initial_state_offset_exclude = "*_tx;*_ty;*_u"
+
+			Properties {
+				hamstrings_l {max_isometric_force.factor = 0.8}
+				hamstrings_r {max_isometric_force.factor = 0.8}
+				iliopsoas_l {optimal_fiber_length.factor = 0.9}
+				iliopsoas_r {optimal_fiber_length.factor = 0.9}
+				}
+			
+		}
+		
+		# Controller for gait based on [Geyer & Herr 2010]
+		<< controllers/reflex_controller.scone >>
+		
+		# Measure for gait
+		<< measures/gait_measure.scone >>
+	}
+}
