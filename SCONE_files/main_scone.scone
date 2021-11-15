@@ -16,7 +16,7 @@ CmaOptimizer {
 		
 		# Model used in simulation
 		ModelOpenSim3 {
-			model_file = import/models/gait0914.osim
+			model_file = model/gait0914.osim
 			
 			# Optimize initial state parameters
 			state_init_file = states/initial_state.sto
@@ -26,7 +26,7 @@ CmaOptimizer {
 		}
 		
 		# Controller for gait based on [Geyer & Herr 2010]
-		<< controllers/reflex_controller.scone >>
+		<< controller/reflex_controller.scone >>
 		
 		# Measure for gait
 		<< measures/gait_measure.scone >>

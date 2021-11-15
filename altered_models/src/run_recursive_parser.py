@@ -26,15 +26,15 @@ series_new_range = ptc.apply_par_file_to_series_with_new_range_2(par_file, serie
 # generate scone folders with multiple combination of controller files.
 case = '2D'  # '1D' or '2D'
 # Altered parameter
-param_1 = 'max_isometric_force'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL', 'weak_KF', 'max_isometric_force' or 'optimal_fiber_length'
+param_1 = 'KS'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL', 'weak_KF', 'max_isometric_force' or 'optimal_fiber_length'
 phase_1 = 'stance'  # 'stance' or 'swing'
-key_values_1 = range(60, 100, 10)
-target_1 = ['hamstrings']  #['soleus', 'gastroc']
+key_values_1 = range(100, 400, 50)
+target_1 = ['soleus', 'gastroc']
 # Second altered parameter if 2D
-param_2 = 'optimal_fiber_length'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL' or 'weak_KF'
+param_2 = 'KS'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL' or 'weak_KF'
 phase_2 = 'swing'   # 'stance' or 'swing'
-key_values_2 = range(70, 100, 10)
-target_2 = ['iliopsoas']  #['soleus', 'gastroc']
+key_values_2 = range(100, 400, 50)
+target_2 = ['soleus', 'gastroc']
 
 # generate controllers with altered reflex parameters
 if param_1 not in ['max_isometric_force', 'optimal_fiber_length']:
@@ -79,12 +79,12 @@ else:
 
     if case == '1D':
         key_dict_list = [key_dict_1]
-        output_folder_path = '../exports/1D/biomechanical/test/' + param_1
+        output_folder_path = '../exports/1D/biomechanical/' + param_1
 
     elif case == '2D':
         key_dict_2 = {'key_name': param_2, 'target': target_2, 'key_values': key_values_2}
         key_dict_list = [key_dict_1, key_dict_2]
-        output_folder_path = '../exports/2D/test/' + param_1 + '_' + param_2
+        output_folder_path = '../exports/2D/' + param_1 + '_' + param_2
 
     scone_base_files_path = '../models/scone_base_files'
     scone_main_file_name = 'main_scone.scone'

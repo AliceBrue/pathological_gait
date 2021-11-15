@@ -549,15 +549,6 @@ def mean_stance(sto_file, var_name, side):
         stance_starts = st_rstance_starts
         stance_ends = st_rstance_ends
 
-    norm_mean = [-2.1, -3.9, -5.6, -5.6, -4.1, -2.1, -0.2, 1.5,
-                 2.9, 4.1, 5.2, 6.1, 6.8, 7.4, 8.0, 8.6, 9.1, 9.7,
-                 10.2, 10.7, 11.1, 11.5, 11.8, 11.8, 11.5, 10.4,
-                 8.4, 4.9, -0.2, -6.9, -13.8, -18.5, -19.8, -18.0,
-                 -14.7, -11.2, -7.9, -4.9, -2.4, -0.3, 1.1, 2.1,
-                 2.5, 2.4, 1.8, 1.0, 0.1, -0.6, -1.1, -1.4, -2.3]
-    #ref = np.mean(norm_mean[int(len(norm_mean)*0.2):int(len(norm_mean)*0.6)])
-    #healthy = 12.727512096909994
-
     if len(stance_starts):
         for t in range(len(stance_starts) - 1):
             if stance_starts[t] < stance_ends[t]:
