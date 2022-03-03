@@ -103,6 +103,7 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
     ----------
     parameter_folder: (string) experiment folder path.
     side: (sting) 'l' or 'r' for left or right leg
+    scone_folder: (string) scone results folders suffix
 
     Returns
     -------
@@ -286,6 +287,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     ----------
     parameter_folder: (string) experiment folder path.
     side: (string) 'l' or 'r' for left or right leg
+    scone_folder: (string) scone results folders suffix
 
     Returns
     -------
@@ -340,7 +342,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
 
     moment_norm = extract_sto.norm_moment(healthy_sto, var_name, side)
     var_names, var_tab = extract_sto.extract_sto(healthy_sto)
-    mdelta_h, sdelta_h, mmax_h, smax_h = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
+    mdelta_h, sdelta_h, mmax_h, smax_h = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
 
     experiments_dict_healthy = {'score': score_healthy,
                                 'total_time': total_time_healthy,
@@ -382,7 +384,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
         # muscle analysis to compute joint moments
         moment_norm = extract_sto.norm_moment(experiment_sto, var_name, side)
         var_names, var_tab = extract_sto.extract_sto(experiment_sto)
-        mdelta, sdelta, mmax, smax = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
+        mdelta, sdelta, mmax, smax = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
         moment_peaks.append(mdelta)
         moment_max.append(mmax)
         

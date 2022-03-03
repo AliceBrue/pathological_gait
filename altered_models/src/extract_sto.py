@@ -132,6 +132,7 @@ def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
     av_gait_cycle: (float) averaged gait cycles duration
     av_stance_end: (float) averaged stance phases duration
     """
+    # stance phases indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
 
     if moment_norm is None:
@@ -146,26 +147,25 @@ def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
     else:
         stance_starts = rstance_starts
         stance_ends = rstance_ends
-    if len(stance_starts):
-        av_gait_cycle = stance_starts[1] - stance_starts[0] #int(np.mean(stance_starts[1:] - stance_starts[:len(stance_starts) - 1]))
-        av_cycle_var = np.zeros((len(stance_starts) - 1, av_gait_cycle))
+
+    # we do not consider the first 2 steps
+    if len(stance_starts) > 3:
+        av_gait_cycle = int(np.mean(stance_starts[2:] - stance_starts[1:len(stance_starts) - 1]))
+        av_cycle_var = np.zeros((len(stance_starts) - 3, av_gait_cycle))
 
         # interpolation of each gait cycle on the averaged gait cycles duration
-        for t in range(len(stance_starts) - 1):
+        for t in range(2, len(stance_starts) - 1):
             cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
             av_cycle_var[t, :] = np.interp(np.arange(av_gait_cycle)/(av_gait_cycle-1)*100,
                                            np.arange(len(cycle_var))/(len(cycle_var)-1)*100, cycle_var)
         av_cycle_var0 = np.mean(av_cycle_var, axis=0)
 
         if stance_starts[0] < stance_ends[0]:   
-            av_stance_end = int(np.mean(stance_ends[:min(len(stance_starts), len(stance_ends))] -
-                                    stance_starts[:min(len(stance_starts), len(stance_ends))]))
+            av_stance_end = int(np.mean(stance_ends[2:min(len(stance_starts), len(stance_ends))] -
+                                    stance_starts[2:min(len(stance_starts), len(stance_ends))]))
         else:
-            av_stance_end = int(np.mean(stance_ends[1:min(len(stance_starts)+1, len(stance_ends))] -
-                                    stance_starts[:len(stan
-
-
-            ce_ends)-1]))
+            av_stance_end = int(np.mean(stance_ends[2:min(len(stance_starts)+1, len(stance_ends))] -
+                                        stance_starts[1:len(stance_ends)-1]))
 
         # average of the variable of interest during stance and swing phases over gait cycles
         av_stance_var = av_cycle_var0[0:av_stance_end]
@@ -178,7 +178,17 @@ def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
 
 
 def norm_moment(experiment_sto, var_name, side):
+    """Perform OpenSim muscle analysis and extracts the normalised ankle moment
+        Parameters
+        ---------
+        experiment_sto: (string) path to the sto file of interest
+        var_name: (string) name of the variable to average
+        side: (string) 'r' or 'l' for right or left variable
 
+        Returns
+        ----------
+        moment_norm: (array) normalised joint moment
+        """
     sto_dir = os.path.dirname(experiment_sto)
 
     # perform muscle analysis
@@ -211,26 +221,24 @@ def norm_moment(experiment_sto, var_name, side):
     return moment_norm
 
 
-def moment_peaks(var_names, var_tab, side, moment_norm):
-    """Interpolates and averages a variable during stance and swing phases over gait cycles
+def moment_metrics(var_names, var_tab, side, moment_norm):
+    """Computes the ankle moment metrics, namely difference between peaks and maximum during stance
     Parameters
     ---------
     var_names: (list) list of variable names
     var_tab: (array) previous variable valuess during simulation
     var_name: (string) name of the variable to average
     side: (string) 'r' or 'l' for right or left variable
-    moment_norm: (array) normalised joint moment to average if not None
+    moment_norm: (array) normalised ankle moment
 
     Returns
     ----------
-    av_stance_var: (array) averaged variable during stance phase over gait cycles
-    av_swing_var: (array) averaged variable during swing phase over gait cycles
-    av_gait_cycle: (float) averaged gait cycles duration
-    av_stance_end: (float) averaged stance phases duration
+    mean_peaks_metric: (array) mean of the peaks metric over the gait cycles
+    std_peaks_metric: (array) std of the peaks metric over the gait cycles
+    mean_max_metric: (float) mean of the max metric over the gait cycles
+    std_max_metric: (float) std of the max metric over the gait cycles
     """
-    delta_mom_peaks = []
-    max_mom_peaks = []
-
+    # stance phases indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
     var = moment_norm
 
@@ -241,99 +249,44 @@ def moment_peaks(var_names, var_tab, side, moment_norm):
         stance_starts = rstance_starts
         stance_ends = rstance_ends
 
+    # moment metrics
+    delta_mom_peaks = []
+    max_mom_peaks = []
     if len(stance_starts):
-        for t in range(len(stance_starts) - 1):
+        # we do not consider the first 2 steps
+        for t in range(2, len(stance_starts) - 1):
             if stance_starts[t] < stance_ends[t]:
                 stance_mom = var[stance_starts[t]:stance_ends[t]]
             else:
                 if t < len(stance_ends) - 1:
                     stance_mom = var[stance_starts[t]:stance_ends[t + 1]]
 
-            max_mom_peaks.append(np.mean(stance_mom))
-            # compute moment peaks
+            max_mom_peaks.append(np.max(stance_mom))
+            # find moment peaks
             first_mom_peaks, _ = find_peaks(stance_mom[:int(0.33 * len(stance_mom))],
                                             distance=int(0.33 * len(stance_mom)))
             sec_mom_peaks, _ = find_peaks(stance_mom[int(0.33 * len(stance_mom)):],
                                           distance=int(0.66 * len(stance_mom)))
+            # if there is no peak consider the max
             if len(sec_mom_peaks) == 0:
                 if len(first_mom_peaks) > 0:
-                    delta_mom_peaks.append(np.mean(stance_mom[int(0.33 * len(stance_mom)):]) -
+                    delta_mom_peaks.append(np.max(stance_mom[int(0.33 * len(stance_mom)):]) -
                                            stance_mom[first_mom_peaks])
                 else:
-                    delta_mom_peaks.append(np.mean(stance_mom[int(0.33 * len(stance_mom)):]) -
-                                           np.mean(stance_mom[:int(0.33 * len(stance_mom))]))
+                    delta_mom_peaks.append(np.max(stance_mom[int(0.33 * len(stance_mom)):]) -
+                                           np.max(stance_mom[:int(0.33 * len(stance_mom))]))
             else:
                 if len(first_mom_peaks) > 0:
                     delta_mom_peaks.append(stance_mom[int(0.33 * len(stance_mom)) + sec_mom_peaks] -
                                            stance_mom[first_mom_peaks])
                 else:
                     delta_mom_peaks.append(stance_mom[int(0.33 * len(stance_mom)) + sec_mom_peaks] -
-                                           np.mean(stance_mom[:int(0.33 * len(stance_mom))]))
+                                           np.max(stance_mom[:int(0.33 * len(stance_mom))]))
 
         return np.mean(delta_mom_peaks), np.std(delta_mom_peaks), np.mean(max_mom_peaks), np.std(max_mom_peaks)
 
     else:
         return None, None, None, None
-
-
-def me_mean_gait_phases2(var_names, var_tab, var_name, side):
-    """Interpolates and averages a variable during late stance and swing phases over gait cycles
-        Parameters
-    ---------
-    var_names: (list) list of variable names
-    var_tab: (array) previous variable values during simulation
-    var_name: (string) name of the variable to average
-    side: (string) 'r' or 'l' for right or left variable
-
-    Returns
-    ----------
-    av_stance_var: (array) averaged variable during late stance phase over gait cycles
-    av_swing_var: (array) averaged variable during swing phase over gait cycles
-    av_gait_cycle: (float) averaged gait cycles duration
-    av_stance_end: (float) averaged stance phases end
-    av_stance_start: (float) averaged stance phases start
-    """
-    lstance_starts, lstance_ends, rstance_starts, rstance_ends = me_stance_phase_indexes(var_names, var_tab)
-    l_starts, l_ends, r_starts, r_ends = stance_phase_indexes(var_names, var_tab)
-
-    var_index = np.where(var_names == var_name)[0][0]
-    var = var_tab[:, var_index]
-
-    if side == 'l':
-        stance_starts = lstance_starts
-        stance_ends = lstance_ends
-    else:
-        stance_starts = rstance_starts
-        stance_ends = rstance_ends
-    if len(stance_starts):
-        av_gait_cycle = int(np.mean(stance_starts[1:] - stance_starts[:len(stance_starts) - 1]))
-        av_cycle_var = np.zeros((len(stance_starts) - 1, av_gait_cycle))
-
-        # interpolation of each gait cycle on the averaged gait cycles duration
-        for t in range(len(stance_starts) - 1):
-            cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
-            av_cycle_var[t, :] = np.interp(np.arange(av_gait_cycle), np.arange(len(cycle_var)), cycle_var)
-        av_cycle_var0 = np.mean(av_cycle_var, axis=0)
-
-        if stance_starts[0] < stance_ends[0]:   
-            av_stance_end = int(np.mean(stance_ends[:min(len(stance_starts), len(stance_ends))] -
-                                    l_starts[:min(len(l_starts), len(l_ends))]))
-            av_stance_start = int(np.mean(stance_starts[:min(len(stance_starts), len(stance_ends))] -
-                            l_starts[:min(len(l_starts), len(l_ends))]))
-        else:
-            av_stance_end = int(np.mean(stance_ends[1:len(stance_ends)] -
-                                    l_starts[:len(l_ends) - 1]))
-            av_stance_start = int(np.mean(stance_starts[:len(stance_ends) - 1] -
-                                    l_starts[:len(l_ends) - 1]))
-
-        # average of the variable of interest during stance and swing phases over gait cycles
-        av_stance_var = av_cycle_var0[0:av_stance_end-av_stance_start]
-        av_swing_var = av_cycle_var0[av_stance_end-av_stance_start:av_gait_cycle-av_stance_start]
-
-        return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end, av_stance_start
-    
-    else:
-        return None, None, None, None, None
 
 
 def me_mean_gait_phases(var_names, var_tab, var_name, side):
@@ -353,6 +306,7 @@ def me_mean_gait_phases(var_names, var_tab, var_name, side):
     av_stance_end: (float) averaged stance phases end
     av_stance_start: (float) averaged stance phases start
     """
+    # late stance periods indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = me_stance_phase_indexes(var_names, var_tab)
     l_starts, l_ends, r_starts, r_ends = stance_phase_indexes(var_names, var_tab)
 
@@ -365,27 +319,27 @@ def me_mean_gait_phases(var_names, var_tab, var_name, side):
     else:
         stance_starts = rstance_starts
         stance_ends = rstance_ends
-    if len(stance_starts):
-        av_gait_cycle = int(stance_starts[1] - stance_starts[0])
-        av_cycle_var = np.zeros((len(stance_starts) - 1, av_gait_cycle))
+    if len(stance_starts) > 3:
+        av_gait_cycle = int(np.mean(stance_starts[2:] - stance_starts[1:len(stance_starts) - 1]))
+        av_cycle_var = np.zeros((len(stance_starts) - 3, av_gait_cycle))
 
         # interpolation of each gait cycle on the averaged gait cycles duration
-        for t in range(len(stance_starts) - 1):
+        for t in range(2, len(stance_starts) - 1):
             cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
             av_cycle_var[t, :] = np.interp(np.arange(av_gait_cycle)/(av_gait_cycle-1)*100,
                                            np.arange(len(cycle_var))/(len(cycle_var)-1)*100, cycle_var)
         av_cycle_var0 = np.mean(av_cycle_var, axis=0)
 
         if stance_starts[0] < stance_ends[0]:
-            av_stance_end = int(np.mean(stance_ends[:min(len(stance_starts), len(stance_ends))] -
-                                        l_starts[:min(len(l_starts), len(l_ends))]))
-            av_stance_start = int(np.mean(stance_starts[:min(len(stance_starts), len(stance_ends))] -
-                                          l_starts[:min(len(l_starts), len(l_ends))]))
+            av_stance_end = int(np.mean(stance_ends[2:min(len(stance_starts), len(stance_ends))] -
+                                        l_starts[2:min(len(l_starts), len(l_ends))]))
+            av_stance_start = int(np.mean(stance_starts[2:min(len(stance_starts), len(stance_ends))] -
+                                          l_starts[2:min(len(l_starts), len(l_ends))]))
         else:
-            av_stance_end = int(np.mean(stance_ends[1:len(stance_ends)] -
-                                        l_starts[:len(l_ends) - 1]))
-            av_stance_start = int(np.mean(stance_starts[:len(stance_ends) - 1] -
-                                          l_starts[:len(l_ends) - 1]))
+            av_stance_end = int(np.mean(stance_ends[2:len(stance_ends)] -
+                                        l_starts[1:len(l_ends) - 1]))
+            av_stance_start = int(np.mean(stance_starts[2:len(stance_ends) - 1] -
+                                          l_starts[2:len(l_ends) - 1]))
 
         # average of the variable of interest during stance and swing phases over gait cycles
         av_stance_var = av_cycle_var0[0:av_stance_end - av_stance_start]
@@ -419,16 +373,14 @@ def get_mean_gc(sto_file, var_list, side, sto_file2=None):
 
     if sto_file2 is not None:
         var_names2, var_tab2 = extract_sto(sto_file2)
-        
-    c = 0
 
+    # average variable of interest on the gait cycles
     for var in range(len(var_list)):
         av_stance_var, av_swing_var, av_gait_cycle, av_stance_end = mean_gait_phases(var_names, var_tab, var_list[var],
                                                                                      side)
         if sto_file2 is not None:
             av_stance_var2, av_swing_var2, av_gait_cycle2, av_stance_end2 = mean_gait_phases(var_names2, var_tab2,
                                                                                                  var_list[var], side)
-        c += 1
 
     if av_stance_var is not None:
         av_gc_var = np.concatenate((av_stance_var, av_swing_var))
@@ -461,7 +413,7 @@ def get_mean_gc(sto_file, var_list, side, sto_file2=None):
 
 
 def me_stance(sto_file, sto_file_healthy, var_name, side):
-    """Computes the mean ME between altered and healthy ankle angle during late stance period
+    """Computes the mean Mean Error (ME) between altered and healthy ankle angle during late stance period
     Parameters
     --------
     sto_file: (string) path to the sto file of interest
@@ -476,19 +428,17 @@ def me_stance(sto_file, sto_file_healthy, var_name, side):
     mean_sw_me: (float) mean ME during swing phase
     std_sw_me: (float) ME std during swing phase
     """
+    # healthy sto file and late stance periods indexes
     var_names, var_tab = extract_sto(sto_file_healthy)
-    h_stance_var, h_swing_var, h_gait_cycle, h_stance_end = mean_gait_phases(var_names, var_tab, var_name, side)
     st_h_stance_var, st_h_swing_var, st_h_gait_cycle, st_h_stance_end, st_h_stance_start = \
         me_mean_gait_phases(var_names, var_tab, var_name, side)
+
+    # pathological sto file and late stance periods indexes
     var_names, var_tab = extract_sto(sto_file)
-        
-    lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
     st_lstance_starts, st_lstance_ends, st_rstance_starts, st_rstance_ends = me_stance_phase_indexes(var_names, var_tab)
 
     var_index = np.where(var_names == var_name)[0][0]
     var = var_tab[:, var_index]
-
-    st_me = []
 
     if side == 'l':
         stance_starts = st_lstance_starts
@@ -497,24 +447,17 @@ def me_stance(sto_file, sto_file_healthy, var_name, side):
         stance_starts = st_rstance_starts
         stance_ends = st_rstance_ends
 
-    if len(stance_starts):
-        av_stance_var = np.zeros((len(stance_starts) - 1, st_h_stance_end - st_h_stance_start))
-        av_swing_var = np.zeros((len(stance_starts) - 1, st_h_stance_start))
-
-        ## interpolation of each gait cycle on the h gait cycle duration
-        for t in range(len(stance_starts) - 1):
+    # Mean Error (ME) between altered and healthy ankle angle during late stance periods
+    st_me = []
+    if len(stance_starts) > 2:
+        # we do not consider the first 2 steps
+        for t in range(2, len(stance_starts) - 1):
             if stance_starts[t] < stance_ends[t]:
                 cycle_var = var[stance_starts[t]:stance_ends[t]]
-                """av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
-                                      cycle_var)
-                st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))"""
                 st_me.append(np.mean(cycle_var) - np.mean(st_h_stance_var))
             else:
                 if t < len(stance_ends) - 1:
                     cycle_var = var[stance_starts[t]:stance_ends[t + 1]]
-                    """av_stance_var[t, :] = np.interp(np.arange(st_h_stance_end - st_h_stance_start), np.arange(len(cycle_var)),
-                                          cycle_var)
-                    st_me.append(np.mean((av_stance_var[t, :] - st_h_stance_var)))"""
                     st_me.append(np.mean(cycle_var) - np.mean(st_h_stance_var))
 
         return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi
@@ -537,13 +480,12 @@ def mean_stance(sto_file, var_name, side):
     std_st_me: (float) ME std during stance phase
     """
     var_names, var_tab = extract_sto(sto_file)
+
+    # late stance periods indexes
     st_lstance_starts, st_lstance_ends, st_rstance_starts, st_rstance_ends = me_stance_phase_indexes(var_names, var_tab)
 
     var_index = np.where(var_names == var_name)[0][0]
     var = var_tab[:, var_index]
-
-    st_mean = []
-    st_max = []
 
     if side == 'l':
         stance_starts = st_lstance_starts
@@ -552,8 +494,12 @@ def mean_stance(sto_file, var_name, side):
         stance_starts = st_rstance_starts
         stance_ends = st_rstance_ends
 
-    if len(stance_starts):
-        for t in range(len(stance_starts) - 1):
+    # mean ankle angle during late stance period
+    st_mean = []
+    st_max = []
+    if len(stance_starts) > 2:
+        # we do not consider the first 2 steps
+        for t in range(2, len(stance_starts) - 1):
             if stance_starts[t] < stance_ends[t]:
                 cycle_var = var[stance_starts[t]:stance_ends[t]]
                 st_mean.append(np.mean(cycle_var))
@@ -585,13 +531,12 @@ def min_ankle_es(sto_file, var_name, side):
     """
     var_names, var_tab = extract_sto(sto_file)
 
+    # stance phases indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
     st_lstance_starts, st_lstance_ends, st_rstance_starts, st_rstance_ends = me_stance_phase_indexes(var_names, var_tab)
 
     var_index = np.where(var_names == var_name)[0][0]
     var = var_tab[:, var_index]
-
-    min_ankle = []
 
     if side == 'l':
         stance_starts = st_lstance_starts
@@ -600,8 +545,11 @@ def min_ankle_es(sto_file, var_name, side):
         stance_starts = st_rstance_starts
         stance_ends = st_rstance_ends
 
-    if len(stance_starts):
-        for t in range(len(stance_starts) - 1):
+    # min angle during ES period
+    min_ankle = []
+    if len(stance_starts) > 2:
+        # we do not consider the first 2 steps
+        for t in range(2, len(stance_starts) - 1):
             if stance_starts[t] < stance_ends[t]:
                 cycle_var = var[lstance_starts[t]:stance_starts[t]]
                 min_ankle.append(np.min(cycle_var))
@@ -632,14 +580,18 @@ def gait_features(sto_file):
     lcalc_x = np.where(var_names == 'calcn_l.com_pos_x')[0][0]
     rcalc_x = np.where(var_names == 'calcn_r.com_pos_x')[0][0]
     time = np.where(var_names == 'time')[0][0]
+
+    # stance phases indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
 
     lcalc_x = var_tab[:, lcalc_x]
     rcalc_x = var_tab[:, rcalc_x]
     time = var_tab[:, time][-1]
 
+    # steps length
     step_l = []
-    if len(lstance_starts):
+    if len(lstance_starts) > 2:
+        # we do not consider the first 2 steps
         if lstance_ends[0] > rstance_starts[0]:
             for s in range(len(lstance_ends)):
                 step_l.append(lcalc_x[lstance_ends[s]] - rcalc_x[lstance_ends[s]])
@@ -668,12 +620,13 @@ def stance_period(sto_file, side):
     std_stance: (float) stance period std
     """
     var_names, var_tab = extract_sto(sto_file)
+
+    # stance phases indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
 
     t_index = np.where(var_names == "time")[0][0]
     time = var_tab[:, t_index]
 
-    av_stance_end = []
     if side == 'l':
         stance_starts = lstance_starts
         stance_ends = lstance_ends
@@ -681,7 +634,10 @@ def stance_period(sto_file, side):
         stance_starts = rstance_starts
         stance_ends = rstance_ends
 
-    if len(stance_starts):
+    # stance phase periods
+    av_stance_end = []
+    if len(stance_starts) > 2:
+        # we do not consider the first 2 steps
         if stance_starts[0] < stance_ends[0]:
             for s in range(min(len(stance_ends), len(stance_starts) - 1)):
                 av_stance_end.append((time[stance_ends[s]] -
