@@ -714,6 +714,7 @@ def plot_scone_muscle_activations(state, muscles, side, col=4, output_file=None)
     else:
         sw = np.mean((ts_time[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time)) - 1]) * 100 /
                      (hs_t[1:min(len(ts_time), len(hs_time))] - hs_t[:min(len(ts_time), len(hs_time)) - 1]))
+    print(sw)
 
     # visualize muscle activations
     M = len(muscles)
@@ -736,7 +737,8 @@ def plot_scone_muscle_activations(state, muscles, side, col=4, output_file=None)
             normalized[mask[j + 1]].plot(ax=ax[j], color=cmap(color_offset(i)))
 
     # configure subfigures and add range values
-    muscle_names = ['ILPSO', 'GMAX', 'HAMS', 'VAS', 'TA', 'GAS', 'SOL']
+    muscle_names = ['iliopsoas', 'gluteus max', 'hamstrings', 'biceps fem', 'rectus fem', 'vasti', 'tibialis ant',
+           'gastroc', 'soleus'] #['ILPSO', 'GMAX', 'HAMS', 'VAS', 'TA', 'GAS', 'SOL']
     for i in range(len(muscles)):
         add_emg_timings(ax[i], mask[i + 1])
         ax[i].axvspan(sw, 100, alpha=0.5, color='blanchedalmond')

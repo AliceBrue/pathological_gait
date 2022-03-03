@@ -161,8 +161,11 @@ def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
             av_stance_end = int(np.mean(stance_ends[:min(len(stance_starts), len(stance_ends))] -
                                     stance_starts[:min(len(stance_starts), len(stance_ends))]))
         else:
-            av_stance_end = int(np.mean(stance_ends[1:len(stance_ends)] -
-                                    stance_starts[:len(stance_ends) - 1]))
+            av_stance_end = int(np.mean(stance_ends[1:min(len(stance_starts)+1, len(stance_ends))] -
+                                    stance_starts[:len(stan
+
+
+            ce_ends)-1]))
 
         # average of the variable of interest during stance and swing phases over gait cycles
         av_stance_var = av_cycle_var0[0:av_stance_end]
@@ -680,12 +683,12 @@ def stance_period(sto_file, side):
 
     if len(stance_starts):
         if stance_starts[0] < stance_ends[0]:
-            for s in range(len(stance_starts - 1)):
+            for s in range(min(len(stance_ends), len(stance_starts) - 1)):
                 av_stance_end.append((time[stance_ends[s]] -
                                       time[stance_starts[s]]) * 100 / (time[stance_starts[s + 1]] -
                                                                        time[stance_starts[s]]))
         else:
-            for s in range(len(stance_ends) - 1):
+            for s in range(min(len(stance_starts), len(stance_ends) - 1)):
                 av_stance_end.append((time[stance_ends[s + 1]] -
                                       time[stance_starts[s]]) * 100 / (time[stance_ends[s + 1]] - time[stance_ends[s]]))
 

@@ -6,13 +6,15 @@ import os
 from pathlib import Path
 import assess_results_folder as arf
 
+
 # Set this to '1D' or '2D' to analyze 1D or 2D experiment results
-case = '2D'
+case = '1D'
 side = 'l'  # 'l' or 'r' for left or right leg plots
 
-results_folder = "../results/"
+results_folder = "../new_results/"
 results_folder_1d = os.path.join(results_folder, '1D')
 results_folder_2d = os.path.join(results_folder, '2D')
+scone_folder = '.f0914m.GH2010v8.S05W.D15.I'
 
 # extract folders for each 1d optimization
 if case == '1D':
@@ -20,7 +22,7 @@ if case == '1D':
     parameter_folders_1d = [sto_file.parent.parent for sto_file in sto_files_1d]
     parameter_folders_1d = list(set(parameter_folders_1d))
     for parameter_folder in parameter_folders_1d:
-        arf.assess_parameter_folder_1d(parameter_folder, side)
+        arf.assess_parameter_folder_1d(parameter_folder, side, scone_folder)
 
 # extract folders for each 2d optimization
 elif case == '2D':
@@ -28,4 +30,4 @@ elif case == '2D':
     parameter_folders_2d = [sto_file.parent.parent for sto_file in sto_files_2d]
     parameter_folders_2d = list(set(parameter_folders_2d))
     for parameter_folder in parameter_folders_2d:
-        arf.assess_parameter_folder_2d(parameter_folder, side)
+        arf.assess_parameter_folder_2d(parameter_folder, side, scone_folder)

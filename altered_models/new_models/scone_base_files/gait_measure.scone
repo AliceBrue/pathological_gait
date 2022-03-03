@@ -1,0 +1,49 @@
+CompositeMeasure {
+	# Measure for gait, minimum speed = X m/s
+	GaitMeasure {
+		name = Gait
+		weight = 100
+		threshold = 0.05
+		termination_height = 0.85
+		min_velocity = 0.5
+	}
+	
+	EffortMeasure {
+		name = Effort
+		weight = 0.1
+		measure_type = Wang2012
+		use_cost_of_transport = 1
+	}
+	
+	CompositeMeasure {
+		name = DofLimits
+		symmetric = 1
+		DofMeasure {
+			weight = 1
+			dof = ankle_angle
+			position { min = -30 max = 30 squared_penalty = 1 }
+			#force { min = 0 max = 0 abs_penalty = 1 }
+		}
+		DofMeasure {
+			weight = 1
+			threshold = 0
+			dof = knee_angle
+			position { min = 0 max = 90 squared_penalty = 1 }
+			#force { min = 0 max = 0 abs_penalty = 1 }
+		}
+		DofMeasure {
+			weight = 1
+			threshold = 0
+			dof = hip_flexion
+			position { min = -20 max = 40 squared_penalty = 1 }
+			#force { min = 0 max = 0 abs_penalty = 1 }
+		}
+		DofMeasure {
+			weight = 0.1
+			threshold = 0
+			dof = pelvis_tilt
+			position { min = -15 max = 0 squared_penalty = 1 }
+		}
+	}
+	
+}

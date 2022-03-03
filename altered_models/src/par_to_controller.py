@@ -37,7 +37,7 @@ def apply_par_file_to_series_with_new_range(par_file, series, min_max_ratio, std
     return series_out
 
 
-def apply_par_file_to_series_with_new_range_2(par_file, series, min_max_ratio):
+def apply_par_file_to_series_with_new_range_2(par_file, series, min_max_ratio, std_ratio):
     '''Extracts parameter values from a par file and applies them on
     a controller PANDAS Series, with new min, max (but same std).
     Parameters
@@ -52,7 +52,7 @@ def apply_par_file_to_series_with_new_range_2(par_file, series, min_max_ratio):
     series_out: (PANDAS Series) controller series with new values extracted from par files.
     '''
     par_df = import_par_df(par_file)
-    par_df = create_new_parameter_distribution_2(par_df, min_max_ratio)
+    par_df = create_new_parameter_distribution_2(par_df, min_max_ratio, std_ratio)
 
     key_df = generate_key_df(par_df)
     threshold_df = generate_threshold_df(par_df)
@@ -137,7 +137,7 @@ def create_new_parameter_distribution(par_df, min_max_range, std_ratio):
     return new_par_df
 
 
-def create_new_parameter_distribution_2(par_df, min_max_range):
+def create_new_parameter_distribution_2(par_df, min_max_range, std_ratio):
     '''Takes a par DataFrame and creates extra columns with new min/max ranges (but same std).
     Parameters
     ----------
@@ -153,7 +153,8 @@ def create_new_parameter_distribution_2(par_df, min_max_range):
     # new max/min = value*(1 +/- min_max_range)
     new_par_df['new_min'] = new_par_df['value'].apply(lambda x: x - abs(x) * min_max_range)
     new_par_df['new_max'] = new_par_df['value'].apply(lambda x: x + abs(x) * min_max_range)
-    new_par_df['new_std'] = new_par_df['std'].apply(lambda x: x)
+    #new_par_df['new_std'] = new_par_df['std'].apply(lambda x: x)
+    new_par_df['new_std'] = new_par_df['value'].apply(lambda x: x * std_ratio)
     new_par_df['new_range_value'] = new_par_df.apply(lambda x: '{0:.8f}~{1:.8f}<{2:.8f},{3:.8f}>'.format(x.value,x.new_std,x.new_min,x.new_max),axis = 1)
     return new_par_df
 

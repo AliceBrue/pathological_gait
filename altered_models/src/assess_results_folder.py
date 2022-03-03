@@ -95,7 +95,7 @@ def get_experiment_sto_file(parameter_folder):
     return sto_file_str
 
 
-def assess_parameter_folder_1d(parameter_folder, side):
+def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
     '''Assesses the necessary metrics of a 1d experiment parameter folder
     and analyzes performance in function of parameter values. It then exports
     results in a report folder.
@@ -123,7 +123,7 @@ def assess_parameter_folder_1d(parameter_folder, side):
     experiment_values = [experiment_values[idx] for idx in experiment_values_idx_sorted]
 
     experiment_folders = [os.path.join(parameter_folder_str, param+'_'+str(experiment_value) +
-                                       '.f0914m.GH2010v8.S10W.D15.I') for experiment_value in experiment_values]
+                                       scone_folder) for experiment_value in experiment_values]
     experiment_sto_files = [get_experiment_sto_file(experiment_folder) for experiment_folder in experiment_folders]
 
     experiment_sto_success = []
@@ -278,7 +278,7 @@ def assess_parameter_folder_1d(parameter_folder, side):
                                  std_healthy2=experiments_dict_healthy['sstep_length'], inv=inv)
 
 
-def assess_parameter_folder_2d(parameter_folder, side):
+def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     '''Assesses the necessary metrics of a 2d experiment parameter folder
     and analyzes performance in function of parameter values. It then exports
     results in a report folder.
@@ -302,7 +302,7 @@ def assess_parameter_folder_2d(parameter_folder, side):
     experiment_values = [parameter_value.split('.')[0] for parameter_value in experiment_values]
 
     experiment_folders = [os.path.join(parameter_folder_str, param + '_' + str(experiment_value.split('_')[0]) +
-                                       '_' + str(experiment_value.split('_')[1]) + '.f0914m.GH2010v8.S10W.D15.I')
+                                       '_' + str(experiment_value.split('_')[1]) + scone_folder)
                           for experiment_value in experiment_values]
     experiment_sto_files = [get_experiment_sto_file(experiment_folder) for experiment_folder in experiment_folders]
 
