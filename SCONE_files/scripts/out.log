@@ -1,1 +1,26 @@
-Storage: read data file =C:\Users\Acer\Documents\BioRob\HBP\NR\SPD002\SCONE\SPD002_Ong_main.sto (nr=10001 nc=561)
+Storage: read data file =C:\Users\Acer\Documents\BioRob\HBP\NR\SPD002\SCONE\slow_SPD002_Ong_main.sto (nr=25001 nc=771)
+Updating Model file from 30000 to latest format...
+Loaded model 20170320-scaled from file C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SPD002_gait9dof18musc_Thelen.osim
+JointSet 'jointset' has subcomponents with duplicate name 'back'.
+The duplicate is being renamed to 'back_0'.
+ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+Storage: read data file =C:\Users\Acer\Documents\BioRob\HBP\NR\SPD002\SCONE\slow_SPD002_Ong_main.sto (nr=25001 nc=771)
+No external loads will be applied (external loads file not specified).
+
+Loading states from file C:\Users\Acer\Documents\BioRob\HBP\NR\SPD002\SCONE\slow_SPD002_Ong_main.sto.
+Storage: read data file =C:\Users\Acer\Documents\BioRob\HBP\NR\SPD002\SCONE\slow_SPD002_Ong_main.sto (nr=25001 nc=771)
+Number of columns does not match in formStateStorage. Found 770 Expected  56.
+Found 25001 state vectors with time stamps ranging from 0 to 250.
+Executing the analyses from 0 to 250...
+MuscleAnalysis: WARNING - coordinate lumbar_extension is locked and can't be varied.
+Printing results of investigation muscle_analysis to C:\Users\Acer\Documents\BioRob\HBP\NR\SPD002\SCONE\analysis.
+Storage: read data file =C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SCONE/analysis\muscle_analysis_MuscleAnalysis_Moment_ankle_angle_r.sto (nr=25001 nc=19)
+Storage: read data file =C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SCONE/analysis\muscle_analysis_MuscleAnalysis_Moment_knee_angle_r.sto (nr=25001 nc=19)
+Storage: read data file =C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SCONE/analysis\muscle_analysis_MuscleAnalysis_Moment_hip_flexion_r.sto (nr=25001 nc=19)
+Updating Model file from 30000 to latest format...
+Loaded model 20170320-scaled from file C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SPD002_gait9dof18musc_Thelen.osim
+JointSet 'jointset' has subcomponents with duplicate name 'back'.
+The duplicate is being renamed to 'back_0'.
+ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.

@@ -702,7 +702,7 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
     if ylabel.split(" ")[0] == "ankle":
         # plot and compute ankle moment metrics
         mom_name = 'ankle_moment_' + side
-        mdelta_mom_peaks, sdelta_mom_peaks, mmax_mom_peaks, smax_mom_peaks, h_mdelta, h_sdelta, h_mmax, h_smax = \
+        mdelta_mom_peaks, sdelta_mom_peaks, mmean_moment, smean_moment, h_mdelta, h_sdelta, h_mmean, h_smean = \
             plot_mean_moment_gc(sto_files, par_values, mom_name, side, xlabel, export_path,
                                 healthy_sto, healthy_value, inv=inv, plot=False)
         if es == 'es':
@@ -712,8 +712,8 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
                               export_path, healthy_value, h_mme, h_sme, h_mdelta, h_sdelta, es=es, inv=inv)
         else:
             h_st_m, h_st_std_m, h_st_max, h_st_std_max = extract_sto.mean_stance(healthy_sto, var_name, side)
-            plot_columns_std3(st_mean, st_std_mean, mmax_mom_peaks, smax_mom_peaks, par_values, "ME_" + side, xlabel,
-                              export_path, healthy_value, h_st_m, h_st_std_m, h_mmax, h_smax, column_values2=st_maximum,
+            plot_columns_std3(st_mean, st_std_mean, mmean_moment, smean_moment, par_values, "ME_" + side, xlabel,
+                              export_path, healthy_value, h_st_m, h_st_std_m, h_mmean, h_smean, column_values2=st_maximum,
                               std_values2=st_std_maximum, healthy_metric2=h_st_max, std_healthy2=h_st_std_max, es=es,
                               inv=inv)
 
@@ -742,8 +742,8 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, title, expo
     # store metrics
     mdelta_mom_peaks = []
     sdelta_mom_peaks = []
-    mmax_mom_peaks = []
-    smax_mom_peaks = []
+    mmean_moment = []
+    smean_moment = []
 
     fig, ax = plt.subplots()
     fig2, ax2 = plt.subplots()
@@ -774,7 +774,7 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, title, expo
     h_av_pow = np.concatenate((h_av_stance_vel, h_av_swing_vel)) * -h_av_mom
 
     h_mom_peaks, _ = find_peaks(h_av_stance_mom, distance=len(h_av_stance_mom))
-    h_mdelta, h_sdelta, h_mmax, h_smax = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
+    h_mdelta, h_sdelta, h_mmean, h_smean = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
 
     label = str(parameter_value)
     ax.plot(h_time[:len(h_av_mom)] * 100 / h_time[h_av_gait_cycle], h_av_mom, label=label, color='black', linewidth=2,
@@ -830,11 +830,11 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, title, expo
                 color=cmap(color_offset(parameter_value)), zorder=10)
 
         # compute moment metrics
-        mdelta, sdelta, mmax, smax = extract_sto.moment_peaks(var_names, var_tab, side, moment_norm)
+        mdelta, sdelta, mmean, smean = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
         mdelta_mom_peaks.append(mdelta)
         sdelta_mom_peaks.append(sdelta)
-        mmax_mom_peaks.append(mmax)
-        smax_mom_peaks.append(smax)
+        mmean_moment.append(mmean)
+        smean_moment.append(smean)
 
     # plot healthy moment peak
     ax.plot(h_time[h_mom_peaks] * 100 / h_time[h_av_gait_cycle], h_av_stance_mom[h_mom_peaks], marker='x', label='peaks',
@@ -885,7 +885,7 @@ def plot_mean_moment_gc(sto_files, parameter_values, var_name, side, title, expo
     if not plot:
         plt.close(fig)
 
-    return mdelta_mom_peaks, sdelta_mom_peaks, mmax_mom_peaks, smax_mom_peaks, h_mdelta, h_sdelta, h_mmax, h_smax
+    return mdelta_mom_peaks, sdelta_mom_peaks, mmean_moment, smean_moment, h_mdelta, h_sdelta, h_mmean, h_smean
 
 
 def get_sto_total_time(sto_file):

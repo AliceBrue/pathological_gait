@@ -324,7 +324,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     st_me = []
     st_max = []
     moment_peaks = []
-    moment_max = []
+    moment_mean = []
 
     # gait features
     stance_period = []
@@ -342,7 +342,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
 
     moment_norm = extract_sto.norm_moment(healthy_sto, var_name, side)
     var_names, var_tab = extract_sto.extract_sto(healthy_sto)
-    mdelta_h, sdelta_h, mmax_h, smax_h = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
+    mdelta_h, sdelta_h, mmean_h, smean_h = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
 
     experiments_dict_healthy = {'score': score_healthy,
                                 'total_time': total_time_healthy,
@@ -352,7 +352,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
                                 'step_length': step_length_h,
                                 'speed': speed_h,
                                 'moment_peaks': mdelta_h,
-                                'moment_max': mmax_h-mmax_h
+                                'moment_mean': mmean_h-mmean_h
                                 }
     
     for idx in range(len(experiment_sto_files)):
@@ -384,9 +384,9 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
         # muscle analysis to compute joint moments
         moment_norm = extract_sto.norm_moment(experiment_sto, var_name, side)
         var_names, var_tab = extract_sto.extract_sto(experiment_sto)
-        mdelta, sdelta, mmax, smax = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
+        mdelta, sdelta, mmean, smean = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
         moment_peaks.append(mdelta)
-        moment_max.append(mmax)
+        moment_mean.append(mmean)
         
         experiment_sto_success.append(experiment_sto)
         experiment_values_success.append(experiment_values[idx])
@@ -408,7 +408,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
                         'step_length': step_length,
                         'speed': speed,
                         'moment_peaks': moment_peaks,
-                        'moment_max': moment_max - mmax_h
+                        'moment_mean': moment_mean - mmean_h
                         }
 
     experiment_values_tuple = list(zip(*[experiment_values_stance, experiment_values_swing]))
@@ -461,7 +461,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             lab = r'$\Delta$'+' moment peaks [Nm/kg]'
             vmin = -1
             vmax = 2
-        elif metric == 'moment_max':
+        elif metric == 'moment_mean':
             lab = r'$\Delta_{h}$'+' mean moment [Nm/kg]'
             vmin = -0.2
             vmax = 0
@@ -493,7 +493,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             title = 'Max ankle angle over the ST phase \n for ' + par
         elif metric == 'moment_peaks':
             title = r'$\Delta$'+' ankle moment peaks \n for ' + par
-        elif metric == 'moment_max':
+        elif metric == 'moment_mean':
             title = r'$\Delta_{h}$' + ' mean ankle moment \n for ' + par
         elif metric == 'step_length':
             title = 'Mean step length \n for '+par

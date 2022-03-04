@@ -11,7 +11,7 @@ import assess_results_folder as arf
 case = '1D'
 side = 'l'  # 'l' or 'r' for left or right leg plots
 
-results_folder = "../new_results/"
+results_folder = "../repeated_results/"
 results_folder_1d = os.path.join(results_folder, '1D')
 results_folder_2d = os.path.join(results_folder, '2D')
 scone_folder = '.f0914m.GH2010v8.S05W.D15.I'

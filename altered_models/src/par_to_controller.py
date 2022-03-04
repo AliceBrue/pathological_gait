@@ -6,38 +6,7 @@ import pandas as pd
 import scone_recursive_parser as srp
 
 
-def apply_par_file_to_series_with_new_range(par_file, series, min_max_ratio, std_ratio):
-    '''Extracts parameter values from a par file and applies them on
-    a controller PANDAS Series, with new min, max and std values.
-    Parameters
-    ----------
-    par_file: (string) path to par file.
-    series: (PANDAS Series) recursive series containing controller data.
-    min_max_ratio: (float) ratio such that new max/min = par_value*(1 +/- min_max_ratio*sign(par_value)).
-    std_ratio: (float) ratio such that new str = par_value*std_ratio.
-
-    Returns
-    -------
-    series_out: (PANDAS Series) controller series with new values extracted from par files.
-    '''
-    par_df = import_par_df(par_file)
-    par_df = create_new_parameter_distribution(par_df, min_max_ratio, std_ratio)
-    
-    key_df = generate_key_df(par_df)
-    threshold_df = generate_threshold_df(par_df)
-    series_out = srp.series_deep_copy(series)
-    
-    key_df.apply(lambda x: apply_par_key_to_series(series_out, x['key_name'],
-                                                x['new_range_value'], x['states'], 
-                                                x['target'], x['source']), axis=1)    
-
-    threshold_df.apply(lambda x: srp.set_unique_key(series_out, x['parameter'], 
-                                                    x['new_range_value']), axis =1)
-    
-    return series_out
-
-
-def apply_par_file_to_series_with_new_range_2(par_file, series, min_max_ratio, std_ratio):
+def apply_par_file_to_series_with_new_range(par_file, series, min_max_ratio):
     '''Extracts parameter values from a par file and applies them on
     a controller PANDAS Series, with new min, max (but same std).
     Parameters
@@ -45,14 +14,13 @@ def apply_par_file_to_series_with_new_range_2(par_file, series, min_max_ratio, s
     par_file: (string) path to par file.
     series: (PANDAS Series) recursive series containing controller data.
     min_max_ratio: (float) ratio such that new max/min = par_value*(1 +/- min_max_ratio*sign(par_value)).
-    std_ratio: (float) ratio such that new str = par_value*std_ratio.
 
     Returns
     -------
     series_out: (PANDAS Series) controller series with new values extracted from par files.
     '''
     par_df = import_par_df(par_file)
-    par_df = create_new_parameter_distribution_2(par_df, min_max_ratio, std_ratio)
+    par_df = create_new_parameter_distribution(par_df, min_max_ratio)
 
     key_df = generate_key_df(par_df)
     threshold_df = generate_threshold_df(par_df)
@@ -114,30 +82,8 @@ def import_par_df(par_file):
     
     return par_df
 
-def create_new_parameter_distribution(par_df, min_max_range, std_ratio):
-    '''Takes a par DataFrame and creates extra columns with new std
-    and min/max ranges.
-    Parameters
-    ----------
-    par_df: (PANDAS DataFrame) DataFrame containing parsed par file.
-    min_max_ratio: (float) ratio such that new max/min = par_value*(1 +/- min_max_ratio*sign(par_value)).
-    std_ratio: (float) ratio such that new str = par_value*std_ratio.
 
-    Returns
-    -------
-    new_par_df: (PANDAS DataFrame) DataFrame containing extra columns with new std and min/max ranges.
-    '''
-    new_par_df = par_df.copy()
-    # Create new std, min and max
-    # new max/min = value*(1 +/- min_max_range)
-    new_par_df['new_min'] = new_par_df['value'].apply(lambda x: x - abs(x) * min_max_range)
-    new_par_df['new_max'] = new_par_df['value'].apply(lambda x: x + abs(x) * min_max_range)
-    new_par_df['new_std'] = new_par_df['std'].apply(lambda x: x)
-    new_par_df['new_range_value'] = new_par_df.apply(lambda x: '{0:.8f}~{1:.8f}<{2:.8f},{3:.8f}>'.format(x.value,x.new_std,x.new_min,x.new_max),axis = 1)
-    return new_par_df
-
-
-def create_new_parameter_distribution_2(par_df, min_max_range, std_ratio):
+def create_new_parameter_distribution(par_df, min_max_range):
     '''Takes a par DataFrame and creates extra columns with new min/max ranges (but same std).
     Parameters
     ----------
@@ -153,8 +99,7 @@ def create_new_parameter_distribution_2(par_df, min_max_range, std_ratio):
     # new max/min = value*(1 +/- min_max_range)
     new_par_df['new_min'] = new_par_df['value'].apply(lambda x: x - abs(x) * min_max_range)
     new_par_df['new_max'] = new_par_df['value'].apply(lambda x: x + abs(x) * min_max_range)
-    #new_par_df['new_std'] = new_par_df['std'].apply(lambda x: x)
-    new_par_df['new_std'] = new_par_df['value'].apply(lambda x: x * std_ratio)
+    new_par_df['new_std'] = new_par_df['std'].apply(lambda x: x)
     new_par_df['new_range_value'] = new_par_df.apply(lambda x: '{0:.8f}~{1:.8f}<{2:.8f},{3:.8f}>'.format(x.value,x.new_std,x.new_min,x.new_max),axis = 1)
     return new_par_df
 

@@ -5,14 +5,14 @@
 import os
 from utils import *
 
-state_file = os.path.abspath('C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SCONE/SPD002_Ong_main.sto')  #MR012/MR012_Ong/healthy_gait_ong_thelen.Sto') #'../states/optimisation.sto')
+state_file = os.path.abspath('C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SCONE/slow_SPD002_Ong_main.sto')  #MR012/MR012_Ong/healthy_gait_ong_thelen.Sto') #'../states/optimisation.sto')
 state = read_from_storage(state_file)
 side = 'r'
 
 # perform muscle analysis to compute muscle induced moments
 osim_model = 'C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SPD002_gait9dof18musc_Thelen.osim'  #MR012/generic/ong_gait9dof18musc_Thelen.osim' #'../model/gait0914.osim'
 analysis_dir = 'C:/Users/Acer/Documents/BioRob/HBP/NR/SPD002/SCONE/analysis'  #MR012/MR012_Ong/healthy/'  #'../states/muscle_analysis/'
-#perform_muscle_analysis(osim_model, state_file, analysis_dir)
+%perform_muscle_analysis(osim_model, state_file, analysis_dir)
 
 # plot joint kinematics
 # plot_scone_kinematics(state, side, state_file)

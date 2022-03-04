@@ -156,7 +156,7 @@ def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
         # interpolation of each gait cycle on the averaged gait cycles duration
         for t in range(2, len(stance_starts) - 1):
             cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
-            av_cycle_var[t, :] = np.interp(np.arange(av_gait_cycle)/(av_gait_cycle-1)*100,
+            av_cycle_var[t-2, :] = np.interp(np.arange(av_gait_cycle)/(av_gait_cycle-1)*100,
                                            np.arange(len(cycle_var))/(len(cycle_var)-1)*100, cycle_var)
         av_cycle_var0 = np.mean(av_cycle_var, axis=0)
 
@@ -222,7 +222,7 @@ def norm_moment(experiment_sto, var_name, side):
 
 
 def moment_metrics(var_names, var_tab, side, moment_norm):
-    """Computes the ankle moment metrics, namely difference between peaks and maximum during stance
+    """Computes the ankle moment metrics, namely difference between peaks and mean during stance
     Parameters
     ---------
     var_names: (list) list of variable names
@@ -233,10 +233,10 @@ def moment_metrics(var_names, var_tab, side, moment_norm):
 
     Returns
     ----------
-    mean_peaks_metric: (array) mean of the peaks metric over the gait cycles
-    std_peaks_metric: (array) std of the peaks metric over the gait cycles
-    mean_max_metric: (float) mean of the max metric over the gait cycles
-    std_max_metric: (float) std of the max metric over the gait cycles
+    mean_delta_peaks_metric: (array) mean of the difference between peaks during stance over the gait cycles
+    std_delta_peaks_metric: (array) std of the difference between peaks during stance over the gait cycles
+    mean_mean_metric: (float) mean of the mean moment during stance over the gait cycles
+    std_mean_metric: (float) std of the mean moment during stance over the gait cycles
     """
     # stance phases indexes
     lstance_starts, lstance_ends, rstance_starts, rstance_ends = stance_phase_indexes(var_names, var_tab)
@@ -251,7 +251,7 @@ def moment_metrics(var_names, var_tab, side, moment_norm):
 
     # moment metrics
     delta_mom_peaks = []
-    max_mom_peaks = []
+    mean_mom_peaks = []
     if len(stance_starts):
         # we do not consider the first 2 steps
         for t in range(2, len(stance_starts) - 1):
@@ -261,7 +261,7 @@ def moment_metrics(var_names, var_tab, side, moment_norm):
                 if t < len(stance_ends) - 1:
                     stance_mom = var[stance_starts[t]:stance_ends[t + 1]]
 
-            max_mom_peaks.append(np.max(stance_mom))
+            mean_mom_peaks.append(np.mean(stance_mom))
             # find moment peaks
             first_mom_peaks, _ = find_peaks(stance_mom[:int(0.33 * len(stance_mom))],
                                             distance=int(0.33 * len(stance_mom)))
@@ -283,7 +283,7 @@ def moment_metrics(var_names, var_tab, side, moment_norm):
                     delta_mom_peaks.append(stance_mom[int(0.33 * len(stance_mom)) + sec_mom_peaks] -
                                            np.max(stance_mom[:int(0.33 * len(stance_mom))]))
 
-        return np.mean(delta_mom_peaks), np.std(delta_mom_peaks), np.mean(max_mom_peaks), np.std(max_mom_peaks)
+        return np.mean(delta_mom_peaks), np.std(delta_mom_peaks), np.mean(mean_mom_peaks), np.std(mean_mom_peaks)
 
     else:
         return None, None, None, None
@@ -326,7 +326,7 @@ def me_mean_gait_phases(var_names, var_tab, var_name, side):
         # interpolation of each gait cycle on the averaged gait cycles duration
         for t in range(2, len(stance_starts) - 1):
             cycle_var = var[stance_starts[t]:stance_starts[t + 1]]
-            av_cycle_var[t, :] = np.interp(np.arange(av_gait_cycle)/(av_gait_cycle-1)*100,
+            av_cycle_var[t-2, :] = np.interp(np.arange(av_gait_cycle)/(av_gait_cycle-1)*100,
                                            np.arange(len(cycle_var))/(len(cycle_var)-1)*100, cycle_var)
         av_cycle_var0 = np.mean(av_cycle_var, axis=0)
 
