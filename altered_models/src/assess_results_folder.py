@@ -48,23 +48,6 @@ def get_score_list(source_folder):
     sto_scores = [sto_file.rstrip('.par.sto').split('_')[-1] for sto_file in sto_files]
 
     return child_folders, sto_scores
-    
-
-def str_is_float(x):
-    '''Returns whether a string can be converted to a float or not.
-    Parameters
-    ----------
-    x: (string) potential float.
-
-    Returns
-    -------
-    bool: True if string can be converted to a float. False otherwise.
-    '''
-    try:
-        float(x)
-        return True
-    except ValueError:
-        return False
 
 
 def get_healthy_sto():
@@ -96,14 +79,13 @@ def get_experiment_sto_file(parameter_folder):
 
 
 def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
-    '''Assesses the necessary metrics of a 1d experiment parameter folder
-    and analyzes performance in function of parameter values. It then exports
-    results in a report folder.
+    '''Assesses the metrics for each of the explored parameters
+    and generates a report folder containing the corresponding plots.
     Parameters
     ----------
     parameter_folder: (string) experiment folder path.
     side: (sting) 'l' or 'r' for left or right leg
-    scone_folder: (string) scone results folders suffix
+    scone_folder: (string) scone results folders suffix depending on SCONE installation
 
     Returns
     -------
@@ -135,7 +117,7 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
     experiment_scores = []
     total_times = []
     
-    # ankle angle
+    # joint kinematics
     var_names = ['ankle_angle_' + side, 'knee_angle_' + side, 'hip_flexion_' + side]
 
     # gait features
@@ -155,12 +137,18 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
         total_times.append(psm.get_sto_total_time(experiment_sto))
 
         # gait features
-        mstep_l, sstep_l, speed = extract_sto.gait_features(experiment_sto)
+        try:  # metric set to nan if there is not gait cycle over which to compute (ie the model falls)
+            mstep_l, sstep_l, speed = extract_sto.gait_features(experiment_sto)
+        except:
+            mstep_l, sstep_l, speed = np.nan, np.nan, np.nan
         mstep_length.append(mstep_l)
         sstep_length.append(sstep_l)
         gspeed.append(speed)
 
-        mstance_p, sstance_p = extract_sto.stance_period(experiment_sto, 'l')
+        try:
+            mstance_p, sstance_p = extract_sto.stance_period(experiment_sto, 'l')
+        except:
+            mstance_p, sstance_p = np.nan, np.nan
         mstance_period.append(mstance_p)
         sstance_period.append(sstance_p)
 
@@ -203,7 +191,7 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
     experiment_title = get_experiment_title(parameter_folder)
     healthy_value = 100
 
-    # export ankle plot
+    # export joints plots
     title = ""
     inv = False
     es = 'es'  # to compute toe gait metrics
@@ -250,7 +238,7 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
                 else:
                     for n in range(len(experiment_title.split(" ")) - 1):
                         title = title + " " + experiment_title.split(" ")[s + n]
-            psm.plot_column(experiments_dict[metric], experiment_values_float_success, metric, title,
+            psm.plot_metric(experiments_dict[metric], experiment_values_float_success, metric, title,
                                 report_folder, healthy_value, experiments_dict_healthy[metric], inv=inv)
 
         elif metric.split("_")[0] == "mstance":
@@ -270,24 +258,23 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
                 else:
                     for n in range(len(experiment_title.split(" ")) - 1):
                         title = title + " " + experiment_title.split(" ")[s + n]
-            psm.plot_columns_std(experiments_dict[metric], experiments_dict['sstance_period'],
+            psm.plot_metrics_std(experiments_dict[metric], experiments_dict['sstance_period'],
                                  experiment_values_float_success, metric, title, report_folder, healthy_value,
                                  experiments_dict_healthy[metric], experiments_dict_healthy['sstance_period'],
-                                 column_values2=experiments_dict['mstep_length'],
+                                 metric_values2=experiments_dict['mstep_length'],
                                  std_values2=experiments_dict['sstep_length'],
                                  healthy_metric2=experiments_dict_healthy['mstep_length'],
                                  std_healthy2=experiments_dict_healthy['sstep_length'], inv=inv)
 
 
 def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
-    '''Assesses the necessary metrics of a 2d experiment parameter folder
-    and analyzes performance in function of parameter values. It then exports
-    results in a report folder.
+    '''Assesses the metrics for each of the explored 2D parameter combinations
+    and generates a report folder containing the corresponding plots.
     Parameters
     ----------
     parameter_folder: (string) experiment folder path.
     side: (string) 'l' or 'r' for left or right leg
-    scone_folder: (string) scone results folders suffix
+    scone_folder: (string) scone results folders suffix depending on SCONE installation
 
     Returns
     -------
@@ -315,11 +302,11 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     experiment_values_stance = []
     experiment_values_swing = []
     
-    # scores experiment
+    # scores
     experiment_scores = []
     experiment_total_time = []
     
-    # ankle angle
+    # joints kinematics
     var_name = 'ankle_angle_' + side
     st_me = []
     st_max = []
@@ -358,7 +345,8 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     for idx in range(len(experiment_sto_files)):
         experiment_sto = experiment_sto_files[idx]
         print(experiment_sto)
-        # scores
+        
+        # score
         experiment_scores.append(float(experiment_sto.rstrip('.par.sto').split('_')[-1]))
 
         # ankle ME
@@ -505,3 +493,126 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
         plt.title(title)
         plt.savefig(os.path.join(report_folder, metric+'.png'))
         plt.close()
+
+
+def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
+    '''Assesses the metrics for each of the repeated experiment (with various initial condition)
+    and generates a report folder containing the corresponding plots.
+    Parameters
+    ----------
+    parameter_folder: (string) experiment folder path.
+    side: (string) 'l' or 'r' for left or right leg
+    scone_folder: (string) scone results folders suffix depending on SCONE installation
+
+    Returns
+    -------
+    None.
+    '''
+    parameter_folder_str = str(parameter_folder)
+    param = parameter_folder_str.split("\\")[-1]
+    param = param.split('.')[0]
+
+    # various initial conditions (IC)
+    experiment_values = [parameter_value.split('_')[-1] for parameter_value in os.listdir(parameter_folder_str)
+                     if os.path.isdir(os.path.join(parameter_folder_str, parameter_value)) and
+                     len(parameter_value.split('.')) > 1]
+    experiment_values = [parameter_value.split('.')[0] for parameter_value in experiment_values]
+
+    # sort IC ascendingly
+    experiment_values_idx_sorted = np.argsort([float(experiment_value) for experiment_value in
+                                               experiment_values])
+    experiment_values = [experiment_values[idx] for idx in experiment_values_idx_sorted]
+
+    experiment_folders = [os.path.join(parameter_folder_str, param + '_' + str(experiment_value) +
+                                       scone_folder) for experiment_value in experiment_values]
+    experiment_sto_files = [get_experiment_sto_file(experiment_folder) for experiment_folder in experiment_folders]
+
+    experiment_sto_success = []
+    experiment_values_success = []
+    experiment_values_float_success = []
+
+    # joints kinematics
+    joint_names = ['ankle_angle_' + side, 'knee_angle_' + side, 'hip_flexion_' + side]
+
+    # Mean absolute error (MAE) joints kinematics and optimised parameters
+    mae_joints = []
+    std_joints = []
+    mae_param = []
+    std_param = []
+
+    # reference first initial condition
+    ref_sto = experiment_sto_files[0]
+    ref_par = ref_sto.split('.sto')[0]
+    ref_var_names, ref_var_tab = extract_sto.extract_sto(ref_sto)
+    for idx in range(len(experiment_sto_files)-1):
+        experiment_sto = experiment_sto_files[1+idx]
+        print(experiment_sto)
+
+        # MAE joints kinematics
+        sto_mae_joints = []
+        sto_std_joints = []
+        var_names, var_tab = extract_sto.extract_sto(experiment_sto)
+        for joint_name in joint_names:
+            try:
+                _, _, av_gait_cycle, _ = extract_sto.mean_gait_phases(var_names, var_tab, joint_name, side)
+                _, _, ref_av_gait_cycle, _ = extract_sto.mean_gait_phases(ref_var_names, ref_var_tab, joint_name, side)
+                sto_mae_joints.append(np.mean(np.abs(av_gait_cycle-ref_av_gait_cycle)))
+                sto_std_joints.append(np.std(np.abs(av_gait_cycle - ref_av_gait_cycle)))
+            except:
+                sto_mae_joints.append(np.nan)
+                sto_mae_joints.append(np.nan)
+        mae_joints.append(np.mean(sto_mae_joints))
+        std_joints.append(np.mean(sto_std_joints))
+
+        # MAE optimised parameters
+        experiment_par = experiment_sto.split('.sto')[0]
+        try:
+            sto_mae_param, sto_std_param = extract_sto.mae_param(experiment_par, ref_par)
+        except:
+            sto_mae_param, sto_std_param = np.nan, np.nan
+        mae_param.append(sto_mae_param)
+        std_param.append(sto_std_param)
+
+        experiment_sto_success.append(experiment_sto)
+        experiment_values_success.append(experiment_values[idx])
+        experiment_values_float_success.append(float(experiment_values[idx]))
+
+    experiments_dict = {'parameter_value': experiment_values_success,
+                        'mae_joints': mae_joints,
+                        'std_joints': std_joints,
+                        'mae_param': mae_param,
+                        'std_param': std_param}
+
+    experiments_df = pd.DataFrame.from_dict(experiments_dict, orient='index').T
+
+    report_folder = os.path.join(parameter_folder_str, 'report')
+    if not os.path.exists(report_folder):
+        os.mkdir(report_folder)
+    experiments_df.to_csv(os.path.join(report_folder, 'experiment_results.csv'), sep='\t')
+
+    experiment_title = get_experiment_title(parameter_folder)
+
+    # export joints plots
+    title = ""
+    es = False
+    if experiment_title.split(" ")[0] == "biomechanical":
+        for n in range(len(experiment_title.split(" ")[1:])):
+            title = title + " " + experiment_title.split(" ")[1 + n]
+
+    for joint_name in joint_names:
+        psm.plot_mean_gc(experiment_sto_success, experiment_values_float_success, joint_name, side, title,
+                         report_folder, healthy_sto=ref_sto, healthy_value=1, es=es, ic=True)
+
+    # export MAE plots
+    title = ""
+    for n in range(len(experiment_title.split(" ")[1:])):
+        title = title + " " + experiment_title.split(" ")[1 + n]
+    title += " % \n for various initial conditions (IC)"
+    metric = "ic"
+    healthy_value = 1
+    healthy_metric = 0
+    healthy_std = 0
+    psm.plot_metrics_std(experiments_dict['mae_joints'], experiments_dict['std_joints'], experiment_values_float_success,
+                        metric, title, report_folder, healthy_value, healthy_metric, healthy_std,
+                        metric_values2=experiments_dict['mae_param'], std_values2=experiments_dict['std_param'],
+                        healthy_metric2=0, std_healthy2=0, plot=False)

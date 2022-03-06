@@ -1,10 +1,32 @@
 """
- This script is an example showing how to parse a **.scone** controller file,
- generate scone folders with multiple combination of controller files with
- altered parameter values and the remaining parameter values imported from the healthy **.par** file.
+ This script generates scone folders with multiple combination of controller files
+ with altered parameter values and the remaining parameter values imported from the healthy **.par** file.
+ It does so by parsing the **.scone** controller file.
+ The exports folder where are generated the scone folder has the following structure:
+ exports/1D/biomechanical/ biomechanical parameters folders
+           /stance/ stance reflex gains folders
+           /swing/ swing reflex gains folders
+        /2D/ 2D parameters folders
 """
 import scone_recursive_parser as srp
 import par_to_controller as ptc
+import os
+
+
+# Set to generate scone folders for 1D or 2D parameters
+export_folder = '../exports'
+case = '1D'  # '1D' or '2D'
+# Altered parameter
+param_1 = 'KS'  # 'max_isometric_force', 'optimal_fiber_length', 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS',
+# 'weak_KL', or 'weak_KF'
+phase_1 = 'stance'  # 'stance' or 'swing'
+key_values_1 = range(150, 450, 50)
+target_1 = ['soleus', 'gastroc']
+# Second altered parameter if 2D
+param_2 = 'KS'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL' or 'weak_KF'
+phase_2 = 'swing'  # 'stance' or 'swing'
+key_values_2 = range(150, 500, 100)
+target_2 = ['soleus', 'gastroc']
 
 # import controller file to string
 controller = srp.controller_file_to_string("../models/gait_controller/reflex_controller.txt")
@@ -18,22 +40,21 @@ series = srp.series_recursive_split(controller)
 # apply optimised parameter values to controller with 5% varation constraint imposed by new value ranges.
 par_file = '../models/scone_base_files/optimisation.par'
 min_max_ratio = 0.05  # 5% variation constraint imposed by new max/min = value*(1 +/- min_max_ratio)
-
 series_new_range = ptc.apply_par_file_to_series_with_new_range(par_file, series, min_max_ratio)
 
-# generate scone folders with multiple combination of controller files
-case = '1D'  # '1D' or '2D'
-# Altered parameter
-param_1 = 'KS'  # 'max_isometric_force', 'optimal_fiber_length', 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS',
-# 'weak_KL', or 'weak_KF'
-phase_1 = 'stance'  # 'stance' or 'swing'
-key_values_1 = range(150, 450, 50)
-target_1 = ['soleus', 'gastroc']
-# Second altered parameter if 2D
-param_2 = 'KS'  # 'KS', 'KL', 'KF', 'TA_KS', 'weak_KS', 'weak_KL' or 'weak_KF'
-phase_2 = 'swing'  # 'stance' or 'swing'
-key_values_2 = range(150, 500, 100)
-target_2 = ['soleus', 'gastroc']
+# create folder structure
+if not os.path.isdir(export_folder):
+    os.makedirs(export_folder)
+if not os.path.isdir(export_folder+'/1D'):
+    os.makedirs(export_folder+'/1D')
+if not os.path.isdir(export_folder+'/1D/biomechanical'):
+    os.makedirs(export_folder+'/1D/biomechanical')
+if not os.path.isdir(export_folder+'/1D/stance'):
+    os.makedirs(export_folder+'/1D/stance')
+if not os.path.isdir(export_folder+'/1D/swing'):
+    os.makedirs(export_folder+'/1D/swing')
+if not os.path.isdir(export_folder+'/2D'):
+    os.makedirs(export_folder+'/2D')
 
 # generate controllers with altered reflex parameters
 if param_1 not in ['max_isometric_force', 'optimal_fiber_length']:
@@ -50,7 +71,7 @@ if param_1 not in ['max_isometric_force', 'optimal_fiber_length']:
 
     if case == '1D':
         key_dict_list = [key_dict_1]
-        output_folder_path = '../new_exports/1D/' + phase_1 + '/' + phase_1 + '_' + param_1
+        output_folder_path = export_folder + '/1D/' + phase_1 + '/' + phase_1 + '_' + param_1
 
     elif case == '2D':
         if phase_2 == 'stance':
@@ -78,7 +99,7 @@ else:
 
     if case == '1D':
         key_dict_list = [key_dict_1]
-        output_folder_path = '../new_exports/1D/biomechanical/' + param_1
+        output_folder_path = export_folder + '/1D/biomechanical/' + param_1
 
     elif case == '2D':
         key_dict_2 = {'key_name': param_2, 'target': target_2, 'key_values': key_values_2}

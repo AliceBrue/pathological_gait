@@ -729,3 +729,29 @@ def modify_model(model_file, sto_dir):
     with open(osim_file, 'w') as file:
         file.writelines(new_lines)
     return osim_file
+
+
+def mae_param(experiment_par, ref_par):
+    """
+    Compute the relative mean absolute error (MAE) between the optimised parameters of 2 optimisation results
+    Parameters
+    --------
+    experiment_par: (string) path to the first optimised par file
+    ref_par: (string) path to the second (reference) optimised par file
+
+    Returns
+    --------
+    mean_mae: (float) mean relative MAE between the optimised parameters of the 2 par files
+    std_mae: (float) std of relative MAE between the optimised parameters of the 2 par files
+    """
+    par_file = open(experiment_par, 'r')
+    lines = par_file.readlines()
+    mae = np.zeros(len(lines))
+
+    ref_file = open(ref_par, 'r')
+    ref_lines = ref_file.readlines()
+
+    for l in range(len(lines)):
+        mae[l] = np.abs(float(lines[l].split()[1]) - float(ref_lines[l].split()[1]))/float(ref_lines[l].split()[1])*100
+
+    return np.mean(mae), np.std(mae)
