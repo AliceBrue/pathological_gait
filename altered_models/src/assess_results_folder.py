@@ -372,7 +372,10 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
         # muscle analysis to compute joint moments
         moment_norm = extract_sto.norm_moment(experiment_sto, var_name, side)
         var_names, var_tab = extract_sto.extract_sto(experiment_sto)
-        mdelta, sdelta, mmean, smean = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
+        try:
+            mdelta, sdelta, mmean, smean = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
+        except:
+            mdelta, sdelta, mmean, smean = np.nan, np.nan, np.nan, np.nan
         moment_peaks.append(mdelta)
         moment_mean.append(mmean)
         
@@ -387,7 +390,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             experiment_total_time.append(psm.get_sto_total_time(experiment_sto))
         except:
             experiment_total_time.append(np.nan)
-        
+
     experiments_dict = {'score': experiment_scores_success,
                         'total_time': experiment_total_time,
                         'ME_st': st_me - h_me,
@@ -441,7 +444,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             else:
                 vmin = 0
                 vmax = 4
-        elif metric == 'st_max':
+        elif metric == 'max_st':
             lab = 'max angle ST [°]'
             vmin = 15
             vmax = 20
@@ -604,15 +607,14 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
                          report_folder, healthy_sto=ref_sto, healthy_value=1, es=es, ic=True)
 
     # export MAE plots
-    title = ""
+    x_label = ""
     for n in range(len(experiment_title.split(" ")[1:])):
-        title = title + " " + experiment_title.split(" ")[1 + n]
-    title += " % \n for various initial conditions (IC)"
+        x_label = x_label + " " + experiment_title.split(" ")[1 + n]
     metric = "ic"
     healthy_value = 1
     healthy_metric = 0
     healthy_std = 0
     psm.plot_metrics_std(experiments_dict['mae_joints'], experiments_dict['std_joints'], experiment_values_float_success,
-                        metric, title, report_folder, healthy_value, healthy_metric, healthy_std,
+                        metric, x_label, report_folder, healthy_value, healthy_metric, healthy_std,
                         metric_values2=experiments_dict['mae_param'], std_values2=experiments_dict['std_param'],
                         healthy_metric2=0, std_healthy2=0, plot=False)

@@ -469,7 +469,10 @@ def plot_metrics_std(metric_values1, std_values1, parameter_values, metric_name,
             ax2.errorbar(np.array(parameter_values_extended) + delta/12, metric_values_extended2, metric_std_extended2,
                         color=color2, marker='D', linestyle="None", label=label2)
 
-    ax.set_xlabel(x_label + " [%]")
+    if metric_name == "ic":
+        ax.set_xlabel('initial condition (IC) number')
+    else:
+        ax.set_xlabel(x_label + " [%]")
     ax.set_xticks(parameter_values_extended)
     if inv:
         ax.invert_xaxis()
@@ -486,18 +489,20 @@ def plot_metrics_std(metric_values1, std_values1, parameter_values, metric_name,
         y_label1 = "stance period (T) [s]"
         y_label2 = "step length (L) [m]"
     elif metric_name == "ic":
-        title = x_label
         y_label1 = 'MAE joints [°]'
         y_label2 = 'relative MAE parameters [%]'
     ax.set_ylabel(y_label1, color=color1)
     if metric_values2 is not None:
         ax2.set_ylabel(y_label2, color=color2)
         ax2.grid(None)
-    if inv:
-        ax.set_title(title + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
-                     + " to " + str(int(min(min(parameter_values), healthy_value))) + "%")
+    if metric_name == 'ic':
+        ax.set_title(x_label + " % \n for various initial conditions (IC)")
     else:
-        ax.set_title(title + " for" + x_label + " from " + str(int(min(min(parameter_values), healthy_value)))
+        if inv:
+            ax.set_title(title + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
+                         + " to " + str(int(min(min(parameter_values), healthy_value))) + "%")
+        else:
+            ax.set_title(title + " for" + x_label + " from " + str(int(min(min(parameter_values), healthy_value)))
                      + " to " + str(int(max(max(parameter_values), healthy_value))) + "%")
 
     if metric_values2 is not None:

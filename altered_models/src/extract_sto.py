@@ -174,7 +174,7 @@ def mean_gait_phases(var_names, var_tab, var_name, side, moment_norm=None):
         return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end
     
     else:
-        return None, None, None, None
+        return np.nan, np.nan, np.nan, np.nan
 
 
 def norm_moment(experiment_sto, var_name, side):
@@ -286,7 +286,7 @@ def moment_metrics(var_names, var_tab, side, moment_norm):
         return np.mean(delta_mom_peaks), np.std(delta_mom_peaks), np.mean(mean_mom_peaks), np.std(mean_mom_peaks)
 
     else:
-        return None, None, None, None
+        return np.nan, np.nan, np.nan, np.nan
 
 
 def me_mean_gait_phases(var_names, var_tab, var_name, side):
@@ -348,7 +348,7 @@ def me_mean_gait_phases(var_names, var_tab, var_name, side):
         return av_stance_var, av_swing_var, av_gait_cycle, av_stance_end, av_stance_start
 
     else:
-        return None, None, None, None, None
+        return np.nan, np.nan, np.nan, np.nan, np.nan
 
 
 def get_mean_gc(sto_file, var_list, side, sto_file2=None):
@@ -463,7 +463,7 @@ def me_stance(sto_file, sto_file_healthy, var_name, side):
         return np.mean(st_me)*180/np.pi, np.std(st_me)*180/np.pi
 
     else:
-        return None, None, None, None
+        return np.nan, np.nan, np.nan, np.nan
 
 
 def mean_stance(sto_file, var_name, side):
@@ -513,7 +513,7 @@ def mean_stance(sto_file, var_name, side):
                np.std(st_max) * 180 / np.pi
 
     else:
-        return None, None, None, None
+        return np.nan, np.nan, np.nan, np.nan
 
 
 def min_ankle_es(sto_file, var_name, side):
@@ -561,7 +561,7 @@ def min_ankle_es(sto_file, var_name, side):
         return np.mean(min_ankle) * 180 / np.pi, np.std(min_ankle) * 180 / np.pi
 
     else:
-        return None, None
+        return np.nan, np.nan
 
 
 def gait_features(sto_file):
@@ -604,7 +604,7 @@ def gait_features(sto_file):
         return np.mean(step_l[1:]), np.std(step_l[1:]), speed
 
     else:
-        return None, None, None
+        return np.nan, np.nan, np.nan
 
 
 def stance_period(sto_file, side):
@@ -651,7 +651,7 @@ def stance_period(sto_file, side):
         return np.mean(av_stance_end[1:]), np.std(av_stance_end[1:])
 
     else:
-        return None, None
+        return np.nan, np.nan
 
 
 def perform_muscle_analysis(model_file, state_file, output_dir):
