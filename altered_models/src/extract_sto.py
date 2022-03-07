@@ -199,7 +199,7 @@ def norm_moment(experiment_sto, var_name, side):
 
     if 'biomechanical' in sto_dir:
         osim_model = modify_model(osim_model, sto_dir)
-    #perform_muscle_analysis(osim_model, experiment_sto, sto_dir + '/muscle_analysis/')
+    perform_muscle_analysis(osim_model, experiment_sto, sto_dir + '/muscle_analysis/')
 
     # find moment file of interest
     _, _, filenames = next(os.walk(sto_dir + '/muscle_analysis/'))
@@ -751,7 +751,7 @@ def mae_param(experiment_par, ref_par):
     ref_file = open(ref_par, 'r')
     ref_lines = ref_file.readlines()
 
-    for l in range(len(lines)):
-        mae[l] = np.abs(float(lines[l].split()[1]) - float(ref_lines[l].split()[1]))/float(ref_lines[l].split()[1])*100
+    for l in range(8, len(lines)):
+        mae[l] = np.abs(float(lines[l].split()[1]) - float(ref_lines[l].split()[1]))/float(ref_lines[l].split()[1])
 
     return np.mean(mae), np.std(mae)

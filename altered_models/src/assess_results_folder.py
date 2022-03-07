@@ -551,7 +551,7 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
     # joints kinematics
     joint_names = ['ankle_angle_' + side, 'knee_angle_' + side, 'hip_flexion_' + side]
 
-    # Mean absolute error (MAE) joints kinematics and optimised parameters
+    # Mean absolute error (MAE) ankle kinematics and optimised parameters
     mae_joints = []
     std_joints = []
     mae_param = []
@@ -565,21 +565,17 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
         experiment_sto = experiment_sto_files[1+idx]
         print(experiment_sto)
 
-        # MAE joints kinematics
-        sto_mae_joints = []
-        sto_std_joints = []
+        # MAE ankle kinematics
         var_names, var_tab = extract_sto.extract_sto(experiment_sto)
-        for joint_name in joint_names:
-            try:
-                _, _, av_gait_cycle, _ = extract_sto.mean_gait_phases(var_names, var_tab, joint_name, side)
-                _, _, ref_av_gait_cycle, _ = extract_sto.mean_gait_phases(ref_var_names, ref_var_tab, joint_name, side)
-                sto_mae_joints.append(np.mean(np.abs(av_gait_cycle-ref_av_gait_cycle)))
-                sto_std_joints.append(np.std(np.abs(av_gait_cycle - ref_av_gait_cycle)))
-            except:
-                sto_mae_joints.append(np.nan)
-                sto_mae_joints.append(np.nan)
-        mae_joints.append(np.mean(sto_mae_joints))
-        std_joints.append(np.mean(sto_std_joints))
+        joint_name = 'ankle_angle_' + side
+        try:
+            _, _, av_gait_cycle, _ = extract_sto.mean_gait_phases(var_names, var_tab, joint_name, side)
+            _, _, ref_av_gait_cycle, _ = extract_sto.mean_gait_phases(ref_var_names, ref_var_tab, joint_name, side)
+            mae_joints.append(np.mean(np.abs(av_gait_cycle-ref_av_gait_cycle)))
+            std_joints.append(np.std(np.abs(av_gait_cycle - ref_av_gait_cycle)))
+        except:
+            mae_joints.append(np.nan)
+            mae_joints.append(np.nan)
 
         # MAE optimised parameters
         experiment_par = experiment_sto.split('.sto')[0]
@@ -591,8 +587,8 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
         std_param.append(sto_std_param)
 
         experiment_sto_success.append(experiment_sto)
-        experiment_values_success.append(experiment_values[idx])
-        experiment_values_float_success.append(float(experiment_values[idx]))
+        experiment_values_success.append(experiment_values[1+idx])
+        experiment_values_float_success.append(float(experiment_values[1+idx]))
 
     experiments_dict = {'parameter_value': experiment_values_success,
                         'mae_joints': mae_joints,
@@ -612,7 +608,7 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
     # export joints plots
     title = ""
     es = False
-    if experiment_title.split(" ")[0] == "biomechanical":
+    if experiment_title.split(" ")[0] in ["biomechanical", "stance"]:
         for n in range(len(experiment_title.split(" ")[1:])):
             title = title + " " + experiment_title.split(" ")[1 + n]
 

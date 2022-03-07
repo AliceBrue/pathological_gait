@@ -1,5 +1,5 @@
 CmaOptimizer {
-	signature_prefix = max_isometric_force_70_3
+	signature_prefix = max_isometric_force_70_7
 	max_generations = 500
 	init_file = optimisation.par
 	use_init_file = true
@@ -315,5 +315,5 @@ CmaOptimizer {
 			}
 		}
 	}
-	output_root = "/shared-dev/bruel/cluster-runs/results/new_meas_std100/rrepeat_F_70/"
+	output_root = "/shared-dev/bruel/cluster-runs/results/new_meas_std100/repeat_F_70_last/"
 }

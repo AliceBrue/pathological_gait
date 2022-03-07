@@ -449,9 +449,9 @@ def plot_metrics_std(metric_values1, std_values1, parameter_values, metric_name,
         label2 = 'step L'
         color2 = 'dimgrey'
     elif metric_name == "ic":
-        label1 = 'MAE joints'
+        label1 = 'MAE ankle angle'
         color1 = 'dimgrey'
-        label2 = 'relative MAE parameters'
+        label2 = 'MRE parameters'
         color2 = 'darkred'
     delta = parameter_values_extended[1] - parameter_values_extended[0]
     if inv:
@@ -489,14 +489,14 @@ def plot_metrics_std(metric_values1, std_values1, parameter_values, metric_name,
         y_label1 = "stance period (T) [s]"
         y_label2 = "step length (L) [m]"
     elif metric_name == "ic":
-        y_label1 = 'MAE joints [°]'
-        y_label2 = 'relative MAE parameters [%]'
+        y_label1 = 'MAE ankle angle [°]'
+        y_label2 = 'MRE parameters'
     ax.set_ylabel(y_label1, color=color1)
     if metric_values2 is not None:
         ax2.set_ylabel(y_label2, color=color2)
         ax2.grid(None)
     if metric_name == 'ic':
-        ax.set_title(x_label + " % \n for various initial conditions (IC)")
+        ax.set_title('Mean errors for ' + x_label + " % \n for various initial conditions (IC)")
     else:
         if inv:
             ax.set_title(title + " for" + x_label + " from " + str(int(max(max(parameter_values), healthy_value)))
@@ -692,7 +692,10 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
     ax.legend(handles, labels, prop={'size': 12})
     plot_healthy_clinical_angles(ax, var_name)
 
-    ax.set_xlabel('gait cycle [%]')
+    if not ic:
+        ax.set_xlabel('gait cycle [%]')
+    else:
+        ax.set_xlabel('initial condition (IC) number')
     ax.set_xlim((0, 100))
     ax.set_ylabel(ylabel + " [°]")
     parameter_values = np.array(labls).astype(float).astype(int)
@@ -711,7 +714,7 @@ def plot_mean_gc(sto_files, parameter_values, var_name, side, title, export_path
         plt.close(fig)
 
     # ME
-    if ylabel.split(" ")[0] == "ankle" and not np.isnan(av_var).any():
+    if ylabel.split(" ")[0] == "ankle" and not np.isnan(av_var).any() and not ic:
         # plot and compute ankle moment metrics
         mom_name = 'ankle_moment_' + side
         mdelta_mom_peaks, sdelta_mom_peaks, mmean_moment, smean_moment, h_mdelta, h_sdelta, h_mmean, h_smean = \

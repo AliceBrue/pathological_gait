@@ -14,7 +14,7 @@ import assess_results_folder as arf
 
 # Set to plot 1D, 2D or repeated results
 results_folder = "../results"  # to adapt
-case = '2D'  # set to '1D', '2D' ro 'repeated' to analyze 1D, 2D or repeated experiments results
+case = '1D'  # set to '1D', '2D' ro 'repeated' to analyze 1D, 2D or repeated experiments results
 side = 'l'  # 'l' or 'r' for left or right leg plots
 scone_folder = '.f0914m.GH2010v8.S05W.D15.I'  # depends on SCONE installation
 

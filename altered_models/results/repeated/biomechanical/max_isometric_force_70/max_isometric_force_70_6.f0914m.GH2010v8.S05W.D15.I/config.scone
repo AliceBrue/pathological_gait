@@ -1,5 +1,5 @@
 CmaOptimizer {
-	signature_prefix = max_isometric_force_70_6
+	signature_prefix = max_isometric_force_70_9
 	max_generations = 500
 	init_file = optimisation.par
 	use_init_file = true
