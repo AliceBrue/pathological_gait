@@ -470,6 +470,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             vmax = None
         ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric], cbar_kws={'label': lab},
                          vmax=vmax, vmin=vmin)
+        ax.patch.set(hatch='x', edgecolor='black')
         if folder_name == "stance_KF_stance_KL":
             ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
         elif folder_name == "stance_TA_KS_swing_TA_KS":

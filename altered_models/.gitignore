@@ -1,6 +1,3 @@
-new_results/**
-new_exports/**
-repeated_results/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

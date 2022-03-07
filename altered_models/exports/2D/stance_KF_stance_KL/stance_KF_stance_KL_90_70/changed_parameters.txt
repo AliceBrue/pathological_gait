@@ -1,0 +1,10 @@
+[{'key_name': 'KF',
+  'key_values': 90,
+  'source': None,
+  'states': 'LateStance EarlyStance Liftoff',
+  'target': ['soleus', 'gastroc']},
+ {'key_name': 'KL',
+  'key_values': 70,
+  'source': None,
+  'states': 'LateStance EarlyStance Liftoff',
+  'target': ['soleus', 'gastroc']}]
