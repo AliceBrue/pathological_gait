@@ -731,9 +731,9 @@ def modify_model(model_file, sto_dir):
     return osim_file
 
 
-def mae_param(experiment_par, ref_par):
+def mre_param(experiment_par, ref_par):
     """
-    Compute the relative mean absolute error (MAE) between the optimised parameters of 2 optimisation results
+    Compute the mean relative error (MRE) between the optimised parameters of 2 optimisation results
     Parameters
     --------
     experiment_par: (string) path to the first optimised par file
@@ -741,17 +741,17 @@ def mae_param(experiment_par, ref_par):
 
     Returns
     --------
-    mean_mae: (float) mean relative MAE between the optimised parameters of the 2 par files
-    std_mae: (float) std of relative MAE between the optimised parameters of the 2 par files
+    mean_mre: (float) mean MRE between the optimised parameters of the 2 par files
+    std_mre: (float) std of MRE between the optimised parameters of the 2 par files
     """
     par_file = open(experiment_par, 'r')
     lines = par_file.readlines()
-    mae = np.zeros(len(lines))
+    mre = np.zeros(len(lines))
 
     ref_file = open(ref_par, 'r')
     ref_lines = ref_file.readlines()
 
     for l in range(8, len(lines)):
-        mae[l] = np.abs(float(lines[l].split()[1]) - float(ref_lines[l].split()[1]))/float(ref_lines[l].split()[1])
+        mre[l] = np.abs(float(lines[l].split()[1]) - float(ref_lines[l].split()[1]))/float(ref_lines[l].split()[1])
 
-    return np.mean(mae), np.std(mae)
+    return np.mean(mre), np.std(mre)

@@ -554,25 +554,32 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
     # Mean absolute error (MAE) ankle kinematics and optimised parameters
     mae_joints = []
     std_joints = []
-    mae_param = []
+    mre_param = []
     std_param = []
 
     # reference first initial condition
     ref_sto = experiment_sto_files[0]
     ref_par = ref_sto.split('.sto')[0]
     ref_var_names, ref_var_tab = extract_sto.extract_sto(ref_sto)
+    joint_name = 'ankle_angle_' + side
+    ref_av_stance_var, ref_av_swing_var, _, _ = extract_sto.mean_gait_phases(ref_var_names, ref_var_tab,
+                                                                             joint_name, side)
+    ref_av_gc_var = np.concatenate((ref_av_stance_var, ref_av_swing_var))
+
+    # other IC results
     for idx in range(len(experiment_sto_files)-1):
         experiment_sto = experiment_sto_files[1+idx]
         print(experiment_sto)
 
         # MAE ankle kinematics
         var_names, var_tab = extract_sto.extract_sto(experiment_sto)
-        joint_name = 'ankle_angle_' + side
         try:
-            _, _, av_gait_cycle, _ = extract_sto.mean_gait_phases(var_names, var_tab, joint_name, side)
-            _, _, ref_av_gait_cycle, _ = extract_sto.mean_gait_phases(ref_var_names, ref_var_tab, joint_name, side)
-            mae_joints.append(np.mean(np.abs(av_gait_cycle-ref_av_gait_cycle)))
-            std_joints.append(np.std(np.abs(av_gait_cycle - ref_av_gait_cycle)))
+            av_stance_var, av_swing_var, _, _ = extract_sto.mean_gait_phases(var_names, var_tab, joint_name, side)
+            av_gc_var = np.concatenate((av_stance_var, av_swing_var))
+            av_gc_var = np.interp(np.arange(len(ref_av_gc_var))/(len(ref_av_gc_var)-1)*100,
+                                  np.arange(len(av_gc_var))/(len(av_gc_var)-1)*100, av_gc_var)
+            mae_joints.append(np.mean(np.abs(av_gc_var-ref_av_gc_var)))
+            std_joints.append(np.std(np.abs(av_gc_var-ref_av_gc_var)))
         except:
             mae_joints.append(np.nan)
             mae_joints.append(np.nan)
@@ -580,10 +587,10 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
         # MAE optimised parameters
         experiment_par = experiment_sto.split('.sto')[0]
         try:
-            sto_mae_param, sto_std_param = extract_sto.mae_param(experiment_par, ref_par)
+            sto_mre_param, sto_std_param = extract_sto.mre_param(experiment_par, ref_par)
         except:
-            sto_mae_param, sto_std_param = np.nan, np.nan
-        mae_param.append(sto_mae_param)
+            sto_mre_param, sto_std_param = np.nan, np.nan
+        mre_param.append(sto_mre_param)
         std_param.append(sto_std_param)
 
         experiment_sto_success.append(experiment_sto)
@@ -593,7 +600,7 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
     experiments_dict = {'parameter_value': experiment_values_success,
                         'mae_joints': mae_joints,
                         'std_joints': std_joints,
-                        'mae_param': mae_param,
+                        'mre_param': mre_param,
                         'std_param': std_param}
 
     experiments_df = pd.DataFrame.from_dict(experiments_dict, orient='index').T
@@ -626,5 +633,5 @@ def assess_parameter_folder_rep(parameter_folder, side, scone_folder):
     healthy_std = 0
     psm.plot_metrics_std(experiments_dict['mae_joints'], experiments_dict['std_joints'], experiment_values_float_success,
                         metric, x_label, report_folder, healthy_value, healthy_metric, healthy_std,
-                        metric_values2=experiments_dict['mae_param'], std_values2=experiments_dict['std_param'],
+                        metric_values2=experiments_dict['mre_param'], std_values2=experiments_dict['std_param'],
                         healthy_metric2=0, std_healthy2=0, plot=False)

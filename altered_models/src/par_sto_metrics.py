@@ -428,11 +428,11 @@ def plot_metrics_std(metric_values1, std_values1, parameter_values, metric_name,
         metric_std_extended2 = std_values2 + [std_healthy2]
 
     sorted_idx = np.argsort(parameter_values_extended)
-    parameter_values_extended = [parameter_values_extended[idx] for idx in sorted_idx]
+    parameter_values_extended = [int(parameter_values_extended[idx]) for idx in sorted_idx]
     metric_values_extended1 = [metric_values_extended1[idx] for idx in sorted_idx]
     metric_std_extended1 = [metric_std_extended1[idx] for idx in sorted_idx]
     if metric_values2 is not None:
-        metric_std_extended2 = [metric_std_extended2[idx] for idx in sorted_idx]
+        metric_values_extended2 = [metric_values_extended2[idx] for idx in sorted_idx]
         metric_std_extended2 = [metric_std_extended2[idx] for idx in sorted_idx]
 
     if metric_name.split("_")[0] == "ME" and metric_values2 is None:
