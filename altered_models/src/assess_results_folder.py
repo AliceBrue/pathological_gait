@@ -113,7 +113,7 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
     experiment_values_success = []
     experiment_values_float_success = []
     
-    # scores
+    # scores and simulation times
     experiment_scores = []
     total_times = []
     
@@ -132,7 +132,7 @@ def assess_parameter_folder_1d(parameter_folder, side, scone_folder):
         experiment_sto = experiment_sto_files[idx]
         print(experiment_sto)
 
-        # score
+        # score and simulation time
         experiment_scores.append(float(experiment_sto.rstrip('.par.sto').split('_')[-1]))
         total_times.append(psm.get_sto_total_time(experiment_sto))
 
@@ -302,7 +302,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     experiment_values_stance = []
     experiment_values_swing = []
     
-    # scores
+    # scores and simulation times
     experiment_scores = []
     experiment_total_time = []
     
@@ -321,15 +321,25 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     healthy_sto = get_healthy_sto()
     # healthy metrics
     score_healthy = float(healthy_sto.rstrip('.par.sto').split('_')[-1])
+    experiment_scores_success.append(score_healthy)
     total_time_healthy = psm.get_sto_total_time(healthy_sto)
+    experiment_total_time.append(total_time_healthy)
 
     h_me, _, h_max, _ = extract_sto.mean_stance(healthy_sto, var_name, side)
+    st_me.append(h_me)
+    st_max.append(h_max)
+
     step_length_h, sstep_length, speed_h = extract_sto.gait_features(healthy_sto)
     stance_period_h, sstance_period = extract_sto.stance_period(healthy_sto, side)
+    step_length.append(step_length_h)
+    stance_period.append(stance_period_h)
+    speed.append(speed_h)
 
     moment_norm = extract_sto.norm_moment(healthy_sto, var_name, side)
     var_names, var_tab = extract_sto.extract_sto(healthy_sto)
     mdelta_h, sdelta_h, mmean_h, smean_h = extract_sto.moment_metrics(var_names, var_tab, side, moment_norm)
+    moment_peaks.append(mdelta_h)
+    moment_mean.append(mmean_h)
 
     experiments_dict_healthy = {'score': score_healthy,
                                 'total_time': total_time_healthy,
@@ -341,13 +351,22 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
                                 'moment_peaks': mdelta_h,
                                 'moment_mean': mmean_h-mmean_h
                                 }
-    
+
+    experiment_sto_success.append(healthy_sto)
+    experiment_values_success.append('100_100')
+    experiment_values_stance.append(100)
+    experiment_values_swing.append(100)
+
     for idx in range(len(experiment_sto_files)):
         experiment_sto = experiment_sto_files[idx]
         print(experiment_sto)
         
-        # score
+        # score and simulation time
         experiment_scores.append(float(experiment_sto.rstrip('.par.sto').split('_')[-1]))
+        try:
+            experiment_total_time.append(psm.get_sto_total_time(experiment_sto))
+        except:
+            experiment_total_time.append(np.nan)
 
         # ankle ME
         try:
@@ -378,18 +397,12 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             mdelta, sdelta, mmean, smean = np.nan, np.nan, np.nan, np.nan
         moment_peaks.append(mdelta)
         moment_mean.append(mmean)
-        
+
         experiment_sto_success.append(experiment_sto)
         experiment_values_success.append(experiment_values[idx])
         experiment_values_stance.append(int(float(experiment_values[idx].split('_')[0])))
-        
         experiment_values_swing.append(int(float(experiment_values[idx].split('_')[1])))
-        
         experiment_scores_success.append(experiment_scores[idx])
-        try:
-            experiment_total_time.append(psm.get_sto_total_time(experiment_sto))
-        except:
-            experiment_total_time.append(np.nan)
 
     experiments_dict = {'score': experiment_scores_success,
                         'total_time': experiment_total_time,
@@ -417,7 +430,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
     
     for metric in experiments_dict:
         df2 = experiments_df[metric].reset_index().pivot(columns='swing', index='stance', values=metric)
-        df2.interpolate(method='akima', axis=1, inplace=True, limit_direction='both')
+        #df2.interpolate(method='akima', axis=1, inplace=True, limit_direction='both')
         if folder_name in ["stance_KF_stance_KL", "stance_TA_KS_swing_TA_KS"]:
             df2 = df2[df2.columns[::-1]]
         else:
@@ -470,7 +483,7 @@ def assess_parameter_folder_2d(parameter_folder, side, scone_folder):
             vmax = None
         ax = sns.heatmap(df2, cmap=map, center=experiments_dict_healthy[metric], cbar_kws={'label': lab},
                          vmax=vmax, vmin=vmin)
-        ax.patch.set(hatch='x', edgecolor='black')
+        ax.patch.set(hatch='x', edgecolor='grey')
         if folder_name == "stance_KF_stance_KL":
             ax.set(xlabel='stance KL [%]', ylabel='stance KF [%]')
         elif folder_name == "stance_TA_KS_swing_TA_KS":

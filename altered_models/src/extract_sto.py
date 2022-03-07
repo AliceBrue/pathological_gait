@@ -199,7 +199,7 @@ def norm_moment(experiment_sto, var_name, side):
 
     if 'biomechanical' in sto_dir:
         osim_model = modify_model(osim_model, sto_dir)
-    perform_muscle_analysis(osim_model, experiment_sto, sto_dir + '/muscle_analysis/')
+    #perform_muscle_analysis(osim_model, experiment_sto, sto_dir + '/muscle_analysis/')
 
     # find moment file of interest
     _, _, filenames = next(os.walk(sto_dir + '/muscle_analysis/'))
