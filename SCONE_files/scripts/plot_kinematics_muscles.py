@@ -12,7 +12,7 @@ side = 'r'
 # perform muscle analysis to compute muscle induced moments
 osim_model = '../model/gait0914.osim'
 analysis_dir = '../states/muscle_analysis/'
-%perform_muscle_analysis(osim_model, state_file, analysis_dir)
+perform_muscle_analysis(osim_model, state_file, analysis_dir)
 
 # plot joint kinematics
 # plot_scone_kinematics(state, side, state_file)
