@@ -104,7 +104,7 @@ else:
     elif case == '2D':
         key_dict_2 = {'key_name': param_2, 'target': target_2, 'key_values': key_values_2}
         key_dict_list = [key_dict_1, key_dict_2]
-        output_folder_path = '../new_exports/2D/' + param_1 + '_' + param_2
+        output_folder_path = '../exports/2D/' + param_1 + '_' + param_2
 
     scone_base_files_path = '../models/scone_base_files'
     scone_main_file_name = 'main_scone.scone'
